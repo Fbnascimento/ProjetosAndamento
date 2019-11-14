@@ -1,0 +1,19 @@
+# depslib dependency file v1.0
+1573693282 source:c:\users\pichau\desktop\bomberman\bomberman\main.c
+	<stdlib.h>
+	<stdio.h>
+	<SDL.h>
+	<SDL_image.h>
+
+1573696635 source:c:\users\pichau\desktop\bomberman\bomberman\jogo.c
+	<stdlib.h>
+	<stdio.h>
+	<SDL.h>
+	<SDL_image.h>
+	"jogo.h"
+	"constante.h"
+
+1573655329 c:\users\pichau\desktop\bomberman\bomberman\jogo.h
+
+1573694861 c:\users\pichau\desktop\bomberman\bomberman\constante.h
+
