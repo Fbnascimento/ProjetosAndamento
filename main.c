@@ -17,9 +17,9 @@ int main(int argc, char *argv[])
 
     SDL_Init(SDL_INIT_VIDEO);
 
-        SDL_WM_SetIcon(IMG_Load("Bomberman.bmp"), NULL);
-        ecran = SDL_SetVideoMode(800,600,32, SDL_HWSURFACE | SDL_DOUBLEBUF);
-        SDL_WM_SetCaption("Bomberman", NULL);
+    SDL_WM_SetIcon(IMG_Load("Bomberman.bmp"), NULL);
+    ecran = SDL_SetVideoMode(800,600,32, SDL_HWSURFACE | SDL_DOUBLEBUF);
+    SDL_WM_SetCaption("Bomberman", NULL);
 
     menu = IMG_Load("menu.png");
     positionMenu.x=0;
@@ -43,17 +43,19 @@ int main(int argc, char *argv[])
                 break;
 
                 case SDLK_1:
-                    jogar(ecran);
-                    break;
+                jogar(ecran);
+                break;
             }
+
             break;
         }
+
         SDL_BlitSurface(menu, NULL, ecran, &positionMenu);
         SDL_Flip(ecran);
     }
 
-        SDL_FreeSurface(menu);
-        SDL_Quit();
+    SDL_FreeSurface(menu);
+    SDL_Quit();
 
     return EXIT_SUCCESS;
 }
