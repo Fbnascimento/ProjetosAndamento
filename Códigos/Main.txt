@@ -3,10 +3,10 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
-#include <SDL_mixer.h>
 
 int main(int argc, char *argv[])
 {
+
     SDL_Surface *ecran = NULL;
     SDL_Surface *menu = NULL;
 
@@ -17,22 +17,13 @@ int main(int argc, char *argv[])
 
     SDL_Init(SDL_INIT_VIDEO);
 
-    SDL_WM_SetIcon(IMG_Load("Bomberman.bmp"), NULL);
-
-    ecran = SDL_SetVideoMode(800,600,32, SDL_HWSURFACE | SDL_DOUBLEBUF);
-
-    SDL_WM_SetCaption("Bomberman", NULL);
+        SDL_WM_SetIcon(IMG_Load("Bomberman.bmp"), NULL);
+        ecran = SDL_SetVideoMode(800,600,32, SDL_HWSURFACE | SDL_DOUBLEBUF);
+        SDL_WM_SetCaption("Bomberman", NULL);
 
     menu = IMG_Load("menu.png");
-
-    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
-    Mix_Music *musicamenu;
-    musicamenu = Mix_LoadMUS("Menu.mp3");
-
     positionMenu.x=0;
     positionMenu.y=0;
-
-    Mix_PlayMusic(musicamenu, -1);
 
     while(continuar)
     {
@@ -52,20 +43,17 @@ int main(int argc, char *argv[])
                 break;
 
                 case SDLK_1:
-                jogar(ecran);
-                break;
+                    jogar(ecran);
+                    break;
             }
-
             break;
         }
-
         SDL_BlitSurface(menu, NULL, ecran, &positionMenu);
         SDL_Flip(ecran);
     }
 
-    Mix_CloseAudio();
-    SDL_FreeSurface(menu);
-    SDL_Quit();
+        SDL_FreeSurface(menu);
+        SDL_Quit();
 
     return EXIT_SUCCESS;
 }

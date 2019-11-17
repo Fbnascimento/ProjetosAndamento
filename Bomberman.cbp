@@ -33,7 +33,7 @@
 			<Add option="-Wall" />
 		</Compiler>
 		<Linker>
-			<Add option="-lmingw32 -lSDLmain -lSDL -lSDL_image" />
+			<Add option="-lmingw32 -lSDLmain -lSDL -lSDL_image -lSDL_mixer" />
 		</Linker>
 		<Unit filename="constante.h" />
 		<Unit filename="jogo.c">

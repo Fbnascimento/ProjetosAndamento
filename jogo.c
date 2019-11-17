@@ -3,29 +3,71 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
+#include <pthread.h>
 
 #include "jogo.h"
 #include "constante.h"
 
+typedef struct
+{
+    int **mapa1;
+    SDL_Surface* ecran1;
+}listearg;
+
+listearg liste;
+
+void TecladoAtualizado(Teclas* estado_teclado)
+{
+    SDL_Event event;
+    while(SDL_PollEvent(&event))
+    {
+        switch (event.type)
+        {
+            case SDL_KEYDOWN:
+            estado_teclado -> key[event.key.keysym.sym] = 1;
+            break;
+
+            case SDL_KEYUP:
+            estado_teclado -> key[event.key.keysym.sym] = 0;
+            break;
+
+            default:
+            break;
+        }
+    }
+}
+
 SDL_Rect position, positionPlayer1;
+SDL_Rect position2, positionPlayer2;
 
 void jogar(SDL_Surface* ecran)
 {
+    Teclas estado_teclado;
+    memset(&estado_teclado, 0, sizeof(estado_teclado));
+
     SDL_Surface *JOGADOR1[4] = {NULL};
+    SDL_Surface *JOGADOR2[4] = {NULL};
+
     SDL_Surface *JOGADOR1Atual = NULL;
+    SDL_Surface *JOGADOR2Atual = NULL;
 
     SDL_Surface *BLOCO = NULL;
 
-    SDL_Surface *PAREDE = NULL;
-
-    SDL_Surface *MAPA1 = NULL;
+    SDL_Rect positionCENARIO1;
+    SDL_Surface *CENARIO1 = NULL;
 
     SDL_Event event;
 
     int continuar = 1;
     int i = 0, j = 0;
 
-    int mapa [13][15];
+    int **mapa = (int**)malloc(13*sizeof(int*));
+
+    for(i = 0; i < 13; i++)
+    {
+        mapa[i] = (int*)malloc((15*sizeof(int)));
+    }
 
     //PAREDE ESQUERDA
 
@@ -138,25 +180,14 @@ void jogar(SDL_Surface* ecran)
     mapa[10][10] = 1;
     mapa[10][12] = 1;
 
-    //LADO INICIAL PLAYER 1
-
-    mapa[1][1] = 0;
-    mapa[1][2] = 0;
-    mapa[2][1] = 0;
-
-    //LADO INICIAL PLAYER 2
-
-    mapa[11][13] = 0;
-    mapa[11][12] = 0;
-    mapa[10][13] = 0;
-
-    //BLOCOS DESTRUÍVES
+    /*BLOCOS DESTRUÍVES
 
     mapa[1][3] = 2;
     mapa[1][4] = 2;
     mapa[1][5] = 2;
     mapa[1][6] = 2;
     mapa[1][6] = 2;
+    mapa[1][7] = 2;
     mapa[1][8] = 2;
     mapa[1][9] = 2;
     mapa[1][10] = 2;
@@ -175,7 +206,7 @@ void jogar(SDL_Surface* ecran)
     mapa[3][4] = 2;
     mapa[3][5] = 2;
     mapa[3][6] = 2;
-    mapa[3][6] = 2;
+    mapa[3][7] = 2;
     mapa[3][8] = 2;
     mapa[3][9] = 2;
     mapa[3][10] = 2;
@@ -196,7 +227,7 @@ void jogar(SDL_Surface* ecran)
     mapa[5][4] = 2;
     mapa[5][5] = 2;
     mapa[5][6] = 2;
-    mapa[5][6] = 2;
+    mapa[5][7] = 2;
     mapa[5][8] = 2;
     mapa[5][9] = 2;
     mapa[5][10] = 2;
@@ -217,7 +248,7 @@ void jogar(SDL_Surface* ecran)
     mapa[7][4] = 2;
     mapa[7][5] = 2;
     mapa[7][6] = 2;
-    mapa[7][6] = 2;
+    mapa[7][7] = 2;
     mapa[7][8] = 2;
     mapa[7][9] = 2;
     mapa[7][10] = 2;
@@ -239,7 +270,7 @@ void jogar(SDL_Surface* ecran)
     mapa[9][4] = 2;
     mapa[9][5] = 2;
     mapa[9][6] = 2;
-    mapa[9][6] = 2;
+    mapa[9][7] = 2;
     mapa[9][8] = 2;
     mapa[9][9] = 2;
     mapa[9][10] = 2;
@@ -260,152 +291,230 @@ void jogar(SDL_Surface* ecran)
     mapa[11][4] = 2;
     mapa[11][5] = 2;
     mapa[11][6] = 2;
-    mapa[11][6] = 2;
+    mapa[11][7] = 2;
     mapa[11][8] = 2;
     mapa[11][9] = 2;
     mapa[11][10] = 2;
-    mapa[11][11] = 2;
+    mapa[11][11] = 2;*/
 
-    //POSIÇÃO PLAYER 1
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
+    Mix_Music *musicabatalha;
+    musicabatalha = Mix_LoadMUS("Batalha.mp3");
 
-    mapa[1][1] = 3;
+    JOGADOR1[BAIXO] = IMG_Load("BombermanF.bmp");
+    JOGADOR1[ESQUERDA] = IMG_Load("BombermanE.bmp");
+    JOGADOR1[DIREITA] = IMG_Load("BombermanD.bmp");
+    JOGADOR1[CIMA] = IMG_Load("BombermanC.bmp");
+
+    JOGADOR2[BAIXO] = IMG_Load("BombermanBF.bmp");
+    JOGADOR2[ESQUERDA] = IMG_Load("BombermanBE.bmp");
+    JOGADOR2[DIREITA] = IMG_Load("BombermanBD.bmp");
+    JOGADOR2[CIMA] = IMG_Load("BombermanBC.bmp");
 
     BLOCO = IMG_Load("Bloco.bmp");
-
-    MAPA1 = IMG_Load("Mapa1.bmp");
-
-    JOGADOR1[BAIXO] = IMG_Load("Bomberman1.bmp");
-    JOGADOR1[ESQUERDA] = IMG_Load("Bomberman2.bmp");
-    JOGADOR1[DIREITA] = IMG_Load("Bomberman3.bmp");
-    JOGADOR1[CIMA] = IMG_Load("Bomberman4.bmp");
+    CENARIO1 = IMG_Load("Cenario1.bmp");
 
     JOGADOR1Atual = JOGADOR1[BAIXO];
+    JOGADOR2Atual = JOGADOR2[BAIXO];
 
-    positionPlayer1.x = 3;
-    positionPlayer1.y = 3;
+    positionPlayer1.x = 1;
+    positionPlayer1.y = 1;
 
-    SDL_EnableKeyRepeat(100,100);
+    positionPlayer2.x = 13;
+    positionPlayer2.y = 11;
+
+    //POSIÇÃO PLAYERS
+
+    mapa[1][1] = JOGADOR1;
+    mapa[11][13] = JOGADOR2;
+
+    Mix_PlayMusic(musicabatalha, -1);
 
     while(continuar)
     {
-        SDL_WaitEvent(&event);
-        switch(event.type)
+        TecladoAtualizado(&estado_teclado);
+
+        if (estado_teclado.key[SDLK_UP])
         {
-            case SDL_QUIT:
+            JOGADOR1Atual = JOGADOR1[CIMA];
+            movimentoJogador(mapa, &positionPlayer1, CIMA);
+        }
+        if (estado_teclado.key[SDLK_DOWN])
+        {
+            JOGADOR1Atual = JOGADOR1[BAIXO];
+            movimentoJogador(mapa, &positionPlayer1, BAIXO);
+        }
+        if (estado_teclado.key[SDLK_RIGHT])
+        {
+            JOGADOR1Atual = JOGADOR1[DIREITA];
+            movimentoJogador(mapa, &positionPlayer1, DIREITA);
+        }
+        if (estado_teclado.key[SDLK_LEFT])
+        {
+            JOGADOR1Atual = JOGADOR1[ESQUERDA];
+            movimentoJogador(mapa, &positionPlayer1, ESQUERDA);
+        }
+        if (estado_teclado.key[SDLK_m])
+        {
+            criacao_bomba (mapa, ecran);
+;       }
+
+
+        if (estado_teclado.key[SDLK_w])
+        {
+            JOGADOR2Atual = JOGADOR2[CIMA];
+            movimentoJogador(mapa, &positionPlayer2, CIMA);
+        }
+        if (estado_teclado.key[SDLK_s])
+        {
+            JOGADOR2Atual = JOGADOR2[BAIXO];
+            movimentoJogador(mapa, &positionPlayer2, BAIXO);
+        }
+        if (estado_teclado.key[SDLK_d])
+        {
+            JOGADOR2Atual = JOGADOR2[DIREITA];
+            movimentoJogador(mapa, &positionPlayer2, DIREITA);
+        }
+        if (estado_teclado.key[SDLK_a])
+        {
+            JOGADOR2Atual = JOGADOR2[ESQUERDA];
+            movimentoJogador(mapa, &positionPlayer2, ESQUERDA);
+        }
+
+        if (estado_teclado.key[SDLK_ESCAPE])
+        {
             continuar = 0;
-            break;
-
-            case SDL_KEYDOWN:
-            switch(event.key.keysym.sym)
-            {
-                case SDLK_ESCAPE:
-                continuar = 0;
-                break;
-
-                case SDLK_UP:
-                JOGADOR1Atual = JOGADOR1[CIMA];
-                movimentoJogador1(mapa, &positionPlayer1, CIMA);
-                break;
-
-                case SDLK_DOWN:
-                JOGADOR1Atual = JOGADOR1[BAIXO];
-                movimentoJogador1(mapa, &positionPlayer1, BAIXO);
-                break;
-
-                case SDLK_RIGHT:
-                JOGADOR1Atual = JOGADOR1[DIREITA];
-                movimentoJogador1(mapa, &positionPlayer1, DIREITA);
-                break;
-
-                case SDLK_LEFT:
-                JOGADOR1Atual = JOGADOR1[ESQUERDA];
-                movimentoJogador1(mapa, &positionPlayer1, ESQUERDA);
-                break;
-            }
-
-        break;
         }
 
         SDL_FillRect(ecran,NULL,SDL_MapRGB(ecran -> format,255,255,255));
 
-        for (i = 0; i < 13; i++)
-        {
-            for (j = 0; j < 15; j++)
-            {
-                position.x = j*TAMANHO_BLOCO;
-                position.y = i*TAMANHO_BLOCO;
+        positionCENARIO1.x = 0;
+        positionCENARIO1.y = 18;
 
-                if(mapa[i][j]== PAREDE)
-                {
-                    SDL_BlitSurface(PAREDE, NULL, ecran, &position);
-                    break;
+        SDL_BlitSurface(CENARIO1, NULL, ecran, &positionCENARIO1);
 
-                }
-            }
-        }
+//        for (i = 1; i < 13; i++)
+//        {
+//            for (j = 1; j < 15; j++)
+//            {
+//               position.x = j*TAMANHO_BLOCO;
+//               position.y = i*TAMANHO_BLOCO+16;
+//
+//                if(mapa[i][j] == 2)
+//                {
+//                    SDL_BlitSurface(BLOCO, NULL, ecran, &position);
+//                }
+//            }
+//        }
 
         position.x = positionPlayer1.x*TAMANHO_BLOCO;
         position.y = positionPlayer1.y*TAMANHO_BLOCO;
 
         SDL_BlitSurface(JOGADOR1Atual,NULL,ecran,&position);
 
-        SDL_Flip(ecran);
+        position2.x = positionPlayer2.x*TAMANHO_BLOCO;
+        position2.y = positionPlayer2.y*TAMANHO_BLOCO;
 
+        SDL_BlitSurface(JOGADOR2Atual,NULL,ecran,&position2);
+
+        usleep(200000);
+
+        SDL_Flip(ecran);
     }
 
-    SDL_EnableKeyRepeat(0,0);
-
-    SDL_FreeSurface(PAREDE);
+    SDL_FreeSurface(BLOCO);
 
     for(i = 0; i < 4; i++)
     {
         SDL_FreeSurface(JOGADOR1[i]);
     }
 
+    for(i = 0; i < 4; i++)
+    {
+        SDL_FreeSurface(JOGADOR2[i]);
+    }
 }
 
-void movimentoJogador1(int mapa[][15], SDL_Rect *pos, int direcao)
+void movimentoJogador(int **mapa, SDL_Rect *pos, int direcao)
 {
     switch(direcao)
     {
         case CIMA:
 
-        if (mapa[pos -> y - 1][pos -> x]== PAREDE)
-            {
-                break;
-            }
+        if (mapa[pos -> y - 1][pos -> x] == PAREDE)
+        {
+            break;
+        }
+        if (mapa[pos -> y - 1][pos -> x] == BLOCO)
+        {
+            break;
+        }
 
         pos-> y--;
         break;
 
         case BAIXO:
 
-        if (mapa[pos -> y + 1][pos -> x]== PAREDE)
-            {
-                break;
-            }
-
+        if (mapa[pos -> y + 1][pos -> x] == PAREDE)
+        {
+            break;
+        }
+        if (mapa[pos -> y + 1][pos -> x] == BLOCO)
+        {
+            break;
+        }
         pos-> y++;
         break;
 
         case ESQUERDA:
 
-        if (mapa[pos -> y][pos -> x - 1]== PAREDE)
-            {
-                break;
-            }
+        if (mapa[pos -> y][pos -> x - 1] == PAREDE)
+        {
+            break;
+        }
+        if (mapa[pos -> y][pos -> x - 1] == BLOCO)
+        {
+            break;
+        }
 
         pos-> x--;
         break;
 
         case DIREITA:
 
-        if (mapa[pos -> y][pos -> x + 1]== PAREDE)
-            {
-                break;
-            }
+        if (mapa[pos -> y][pos -> x + 1] == PAREDE)
+        {
+            break;
+        }
+        if (mapa[pos -> y][pos -> x + 1] == BLOCO)
+        {
+            break;
+        }
 
         pos-> x++;
         break;
     }
+}
+
+void criacao_bomba (int **mapa, SDL_Surface* ecran)
+{
+    pthread_t thread1;
+
+    liste.mapa1 = mapa;
+    liste.ecran1 = ecran;
+
+    pthread_create(&thread1, NULL, gestion_bomba, (void*)&liste);
+
+}
+
+void *gestion_bomba(void*arg)
+{
+    listearg *args = (listearg*)arg;
+    int **mapa1 = args -> mapa1;
+
+    {
+
+    }
+
+    pthread_exit(NULL);
 }
