@@ -11,12 +11,21 @@
 
 typedef struct
 {
-    int **mapa1;
+int **mapa1;
     SDL_Surface* ecran1;
 }listearg;
 
 listearg liste;
 
+//CRIAÇÃO BOMBAS NA TELA
+SDL_Rect positionBomba;
+SDL_Rect positionExplosaoD;
+SDL_Rect positionExplosaoE;
+SDL_Rect positionExplosaoB;
+SDL_Rect positionExplosaoC;
+SDL_Rect positionExplosaoM;
+
+//TECLADO PARA OS 2 PLAYERS SEM CONFLITO
 void TecladoAtualizado(Teclas* estado_teclado)
 {
     SDL_Event event;
@@ -38,14 +47,17 @@ void TecladoAtualizado(Teclas* estado_teclado)
     }
 }
 
+//CRICAÇÃO DAS POSIÇÕES DOS PLAYERS
 SDL_Rect position, positionPlayer1;
 SDL_Rect position2, positionPlayer2;
 
+//FUNÇÃO DO JOGO
 void jogar(SDL_Surface* ecran)
 {
     Teclas estado_teclado;
     memset(&estado_teclado, 0, sizeof(estado_teclado));
 
+//CRICAÇÃO DAS IMAGENS
     SDL_Surface *JOGADOR1[4] = {NULL};
     SDL_Surface *JOGADOR2[4] = {NULL};
 
@@ -54,14 +66,24 @@ void jogar(SDL_Surface* ecran)
 
     SDL_Surface *BLOCO = NULL;
 
-    SDL_Rect positionCENARIO1;
-    SDL_Surface *CENARIO1 = NULL;
+//CRIAÇÃO DA POSIÇÃO DO CENÁRIO E DA SUA IMAGEM
+    SDL_Rect positionCENARIO;
+    SDL_Surface *CENARIO = NULL;
 
     SDL_Event event;
+
+//CRIAÇÃO DAS IMAGENS DE BOMBAS E EXPLOSÃO
+    SDL_Surface *BOMBA = NULL;
+    SDL_Surface *EXPLOSAOB = NULL;
+    SDL_Surface *EXPLOSAOC = NULL;
+    SDL_Surface *EXPLOSAOD = NULL;
+    SDL_Surface *EXPLOSAOE = NULL;
+    SDL_Surface *EXPLOSAOM = NULL;
 
     int continuar = 1;
     int i = 0, j = 0;
 
+//CRIAÇÃO DO MAPA
     int **mapa = (int**)malloc(13*sizeof(int*));
 
     for(i = 0; i < 13; i++)
@@ -69,8 +91,7 @@ void jogar(SDL_Surface* ecran)
         mapa[i] = (int*)malloc((15*sizeof(int)));
     }
 
-    //PAREDE ESQUERDA
-
+//PAREDE ESQUERDA
     mapa[0][0] = 1;
     mapa[1][0] = 1;
     mapa[2][0] = 1;
@@ -85,8 +106,7 @@ void jogar(SDL_Surface* ecran)
     mapa[11][0] = 1;
     mapa[12][0] = 1;
 
-    //PAREDE DIREITA
-
+//PAREDE DIREITA
     mapa[0][14] = 1;
     mapa[1][14] = 1;
     mapa[2][14] = 1;
@@ -101,8 +121,7 @@ void jogar(SDL_Surface* ecran)
     mapa[11][14] = 1;
     mapa[12][14] = 1;
 
-    //PARADE CIMA
-
+//PARADE CIMA
     mapa[0][1] = 1;
     mapa[0][2] = 1;
     mapa[0][3] = 1;
@@ -118,8 +137,7 @@ void jogar(SDL_Surface* ecran)
     mapa[0][13] = 1;
     mapa[0][14] = 1;
 
-    //PAREDE BAIXO
-
+//PAREDE BAIXO
     mapa[12][1] = 1;
     mapa[12][2] = 1;
     mapa[12][3] = 1;
@@ -136,16 +154,14 @@ void jogar(SDL_Surface* ecran)
     mapa[12][14] = 1;
     mapa[2][2] = 1;
 
-    //LINHA DE PAREDE INTERNA 1
-
+//LINHA DE PAREDE INTERNA 1
     mapa[2][4] = 1;
     mapa[2][6] = 1;
     mapa[2][8] = 1;
     mapa[2][10] = 1;
     mapa[2][12] = 1;
 
-    //LINHA DE PAREDE INTERNA 2
-
+//LINHA DE PAREDE INTERNA 2
     mapa[4][2] = 1;
     mapa[4][4] = 1;
     mapa[4][6] = 1;
@@ -153,8 +169,7 @@ void jogar(SDL_Surface* ecran)
     mapa[4][10] = 1;
     mapa[4][12] = 1;
 
-    //LINHA DE PAREDE INTERNA 3
-
+//LINHA DE PAREDE INTERNA 3
     mapa[6][2] = 1;
     mapa[6][4] = 1;
     mapa[6][6] = 1;
@@ -162,8 +177,7 @@ void jogar(SDL_Surface* ecran)
     mapa[6][10] = 1;
     mapa[6][12] = 1;
 
-    //LINHA DE PAREDE INTERNA 4
-
+//LINHA DE PAREDE INTERNA 4
     mapa[8][2] = 1;
     mapa[8][4] = 1;
     mapa[8][6] = 1;
@@ -171,8 +185,7 @@ void jogar(SDL_Surface* ecran)
     mapa[8][10] = 1;
     mapa[8][12] = 1;
 
-    //LINHA DE PAREDE INTERNA 5
-
+//LINHA DE PAREDE INTERNA 5
     mapa[10][2] = 1;
     mapa[10][4] = 1;
     mapa[10][6] = 1;
@@ -180,8 +193,7 @@ void jogar(SDL_Surface* ecran)
     mapa[10][10] = 1;
     mapa[10][12] = 1;
 
-    /*BLOCOS DESTRUÍVES
-
+//BLOCOS DESTRUÍVES
     mapa[1][3] = 2;
     mapa[1][4] = 2;
     mapa[1][5] = 2;
@@ -295,41 +307,52 @@ void jogar(SDL_Surface* ecran)
     mapa[11][8] = 2;
     mapa[11][9] = 2;
     mapa[11][10] = 2;
-    mapa[11][11] = 2;*/
+    mapa[11][11] = 2;
 
-    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
+//CRIAÇÃO DA MÚSICA DE BATALHA
+/*  Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
     Mix_Music *musicabatalha;
-    musicabatalha = Mix_LoadMUS("Batalha.mp3");
+    musicabatalha = Mix_LoadMUS("Batalha.mp3");*/
 
-    JOGADOR1[BAIXO] = IMG_Load("BombermanF.bmp");
-    JOGADOR1[ESQUERDA] = IMG_Load("BombermanE.bmp");
-    JOGADOR1[DIREITA] = IMG_Load("BombermanD.bmp");
-    JOGADOR1[CIMA] = IMG_Load("BombermanC.bmp");
+//CARREGAMENTO DAS IMAGENS
+    BOMBA = IMG_Load("Bomba2.bmp");
+    EXPLOSAOB = IMG_Load("ExplosaoB.bmp");
+    EXPLOSAOC = IMG_Load("ExplosaoC.bmp");
+    EXPLOSAOD = IMG_Load("ExplosaoD.bmp");
+    EXPLOSAOE = IMG_Load("ExplosaoE.bmp");
+    EXPLOSAOM = IMG_Load("ExplosaoM.bmp");
 
-    JOGADOR2[BAIXO] = IMG_Load("BombermanBF.bmp");
-    JOGADOR2[ESQUERDA] = IMG_Load("BombermanBE.bmp");
-    JOGADOR2[DIREITA] = IMG_Load("BombermanBD.bmp");
-    JOGADOR2[CIMA] = IMG_Load("BombermanBC.bmp");
+    JOGADOR1[BAIXO] = IMG_Load("BombermanF.png");
+    JOGADOR1[ESQUERDA] = IMG_Load("BombermanE.png");
+    JOGADOR1[DIREITA] = IMG_Load("BombermanD.png");
+    JOGADOR1[CIMA] = IMG_Load("BombermanC.png");
 
-    BLOCO = IMG_Load("Bloco.bmp");
-    CENARIO1 = IMG_Load("Cenario1.bmp");
+    JOGADOR2[BAIXO] = IMG_Load("BombermanBF.png");
+    JOGADOR2[ESQUERDA] = IMG_Load("BombermanBE.png");
+    JOGADOR2[DIREITA] = IMG_Load("BombermanBD.png");
+    JOGADOR2[CIMA] = IMG_Load("BombermanBC.png");
+
+    BLOCO = IMG_Load("Bloco.png");
+    CENARIO = IMG_Load("Cenario.bmp");
 
     JOGADOR1Atual = JOGADOR1[BAIXO];
     JOGADOR2Atual = JOGADOR2[BAIXO];
 
+//POSIÇÃO DOS JOGADORES NA TELA
     positionPlayer1.x = 1;
     positionPlayer1.y = 1;
 
     positionPlayer2.x = 13;
     positionPlayer2.y = 11;
 
-    //POSIÇÃO PLAYERS
+//POSIÇÃO DOS JOGADORES NA MATRIX
 
     mapa[1][1] = JOGADOR1;
     mapa[11][13] = JOGADOR2;
 
-    Mix_PlayMusic(musicabatalha, -1);
+//    Mix_PlayMusic(musicabatalha, -1);
 
+//MOVIMENTAÇÃO DOS JOGADORES
     while(continuar)
     {
         TecladoAtualizado(&estado_teclado);
@@ -357,7 +380,7 @@ void jogar(SDL_Surface* ecran)
         if (estado_teclado.key[SDLK_m])
         {
             criacao_bomba (mapa, ecran);
-;       }
+        }
 
 
         if (estado_teclado.key[SDLK_w])
@@ -380,32 +403,64 @@ void jogar(SDL_Surface* ecran)
             JOGADOR2Atual = JOGADOR2[ESQUERDA];
             movimentoJogador(mapa, &positionPlayer2, ESQUERDA);
         }
+        if (estado_teclado.key[SDLK_p])
+        {
+            criacao_bomba (mapa, ecran);
+        }
 
         if (estado_teclado.key[SDLK_ESCAPE])
         {
             continuar = 0;
         }
 
-        SDL_FillRect(ecran,NULL,SDL_MapRGB(ecran -> format,255,255,255));
+        SDL_FillRect(ecran,NULL,SDL_MapRGB(ecran -> format,0,0,0));
 
-        positionCENARIO1.x = 0;
-        positionCENARIO1.y = 18;
+//POSIÇÃO DO CENARIO NA TELA
+        positionCENARIO.x = 0;
+        positionCENARIO.y = 23;
 
-        SDL_BlitSurface(CENARIO1, NULL, ecran, &positionCENARIO1);
+        SDL_BlitSurface(CENARIO, NULL, ecran, &positionCENARIO);
 
-//        for (i = 1; i < 13; i++)
-//        {
-//            for (j = 1; j < 15; j++)
-//            {
-//               position.x = j*TAMANHO_BLOCO;
-//               position.y = i*TAMANHO_BLOCO+16;
-//
-//                if(mapa[i][j] == 2)
-//                {
-//                    SDL_BlitSurface(BLOCO, NULL, ecran, &position);
-//                }
-//            }
-//        }
+//CRIAÇÃO DOS BLOCOS DESTRUÍVEIS100000
+        for (i = 1; i < 13; i++)
+        {
+            for (j = 1; j < 15; j++)
+            {
+               position.x = j*TAMANHO_BLOCO;
+               position.y = i*TAMANHO_BLOCO+24;
+
+                switch(mapa[i][j])
+                {
+                    case 2:
+                    SDL_BlitSurface(BLOCO, NULL, ecran, &position);
+                    break;
+
+                    case 5:
+                    SDL_BlitSurface(BOMBA, NULL, ecran, &position);
+                    break;
+
+                    case 10:
+                    SDL_BlitSurface(EXPLOSAOM, NULL, ecran, &position);
+                    break;
+
+                    case 6:
+                    SDL_BlitSurface(EXPLOSAOB, NULL, ecran, &position);
+                    break;
+
+                    case 7:
+                    SDL_BlitSurface(EXPLOSAOC, NULL, ecran, &position);
+                    break;
+
+                    case 8:
+                    SDL_BlitSurface(EXPLOSAOD, NULL, ecran, &position);
+                    break;
+
+                    case 9:
+                    SDL_BlitSurface(EXPLOSAOE, NULL, ecran, &position);
+                    break;
+                }
+            }
+        }
 
         position.x = positionPlayer1.x*TAMANHO_BLOCO;
         position.y = positionPlayer1.y*TAMANHO_BLOCO;
@@ -417,11 +472,13 @@ void jogar(SDL_Surface* ecran)
 
         SDL_BlitSurface(JOGADOR2Atual,NULL,ecran,&position2);
 
-        usleep(200000);
+//VELOCIDADE DE MOVIMENTO DOS JOGADORES
+        usleep(150000);
 
         SDL_Flip(ecran);
     }
 
+//LIBERAÇÃO DAS IMAGENS NA TELA
     SDL_FreeSurface(BLOCO);
 
     for(i = 0; i < 4; i++)
@@ -433,8 +490,17 @@ void jogar(SDL_Surface* ecran)
     {
         SDL_FreeSurface(JOGADOR2[i]);
     }
+
+    SDL_FreeSurface(BOMBA);
+    SDL_FreeSurface(EXPLOSAOB);
+    SDL_FreeSurface(EXPLOSAOC);
+    SDL_FreeSurface(EXPLOSAOD);
+    SDL_FreeSurface(EXPLOSAOE);
+    SDL_FreeSurface(EXPLOSAOM);
+
 }
 
+//COLISÃO DOS JOGADORES COM CENÁRIO E BLOCOS
 void movimentoJogador(int **mapa, SDL_Rect *pos, int direcao)
 {
     switch(direcao)
@@ -496,6 +562,7 @@ void movimentoJogador(int **mapa, SDL_Rect *pos, int direcao)
     }
 }
 
+//CRIAÇÃO DA BOMBA
 void criacao_bomba (int **mapa, SDL_Surface* ecran)
 {
     pthread_t thread1;
@@ -504,7 +571,6 @@ void criacao_bomba (int **mapa, SDL_Surface* ecran)
     liste.ecran1 = ecran;
 
     pthread_create(&thread1, NULL, gestion_bomba, (void*)&liste);
-
 }
 
 void *gestion_bomba(void*arg)
@@ -512,9 +578,117 @@ void *gestion_bomba(void*arg)
     listearg *args = (listearg*)arg;
     int **mapa1 = args -> mapa1;
 
+    mapa1[positionPlayer1.y][positionPlayer1.x] = BOMBA;
+
+    SDL_Delay(3000);
+
+    int a, b = 0;
+
+    for(a = 1; a < 13; a++)//1551511515
     {
+        for (b = 1; b < 15; b++)
+        {
+            if (mapa1[a][b] == 5)
+            {
+                mapa1[a][b] = 10;
 
+                if (mapa1[a+1][b] != 2)
+                {
+                    mapa1[a+1][b] = 6;
+                }
+                if (mapa1[a+1][b] != mapa1[positionPlayer1.y][positionPlayer1.x])
+                {
+                    mapa1[a+1][b] = 6;
+                }
+                if (mapa1[a+1][b] != mapa1[positionPlayer2.y][positionPlayer2.x])
+                {
+                    mapa1[a+1][b] = 6;
+                }
+                if (mapa1[a+1][b] != 3)
+                {
+                    mapa1[a+1][b] = 6;
+                }
+
+                if (mapa1[a-1][b] != 2)
+                {
+                    mapa1[a-1][b] = 7;
+                }
+                if (mapa1[a-1][b] != mapa1[positionPlayer1.y][positionPlayer1.x])
+                {
+                    mapa1[a-1][b] = 7;
+                }
+                if (mapa1[a-1][b] != mapa1[positionPlayer2.y][positionPlayer2.x])
+                {
+                    mapa1[a-1][b] = 7;
+                }
+                if (mapa1[a-1][b] != 3)
+                {
+                    mapa1[a-1][b] = 7;
+                }
+
+                if (mapa1[a][b+1] != 2)
+                {
+                    mapa1[a][b+1] = 8;
+                }
+                if (mapa1[a][b+1] != mapa1[positionPlayer1.y][positionPlayer1.x])
+                {
+                    mapa1[a][b+1] = 8;
+                }
+                if (mapa1[a][b+1] != mapa1[positionPlayer2.y][positionPlayer2.x])
+                {
+                    mapa1[a][b+1] = 8;
+                }
+                if (mapa1[a][b+1] != 3)
+                {
+                    mapa1[a][b+1] = 8;
+                }
+
+                if (mapa1[a][b-1] != 2)
+                {
+                    mapa1[a][b-1] = 9;
+                }
+                if (mapa1[a][b-1] != mapa1[positionPlayer1.y][positionPlayer1.x])
+                {
+                    mapa1[a][b-1] = 9;
+                }
+                if (mapa1[a][b-1] != mapa1[positionPlayer2.y][positionPlayer2.x])
+                {
+                    mapa1[a][b-1] = 9;
+                }
+                if (mapa1[a][b-1] != 3)
+                {
+                    mapa1[a][b-1] = 9;
+                }
+            }
+        }
     }
+    SDL_Delay(150);
 
+    for (a = 1; a < 13; a++)
+    {
+        for (b = 1; b < 15; b++)
+        {
+            if (mapa1[a][b] == 10)
+            {
+                mapa1[a][b] = 0;
+            }
+            if (mapa1[a][b] == 6)
+            {
+                mapa1[a][b] = 0;
+            }
+            if (mapa1[a][b] == 7)
+            {
+                mapa1[a][b] = 0;
+            }
+            if (mapa1[a][b] == 8)
+            {
+                mapa1[a][b] = 0;
+            }
+            if (mapa1[a][b] == 9)
+            {
+                mapa1[a][b] = 0;
+            }
+        }
+    }
     pthread_exit(NULL);
 }

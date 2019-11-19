@@ -5,6 +5,7 @@
 #include <SDL_image.h>
 #include <SDL_mixer.h>
 
+//INICIALIZAÇÃO DE TELA E MENU
 int main(int argc, char *argv[])
 {
     SDL_Surface *ecran = NULL;
@@ -19,21 +20,24 @@ int main(int argc, char *argv[])
 
     SDL_WM_SetIcon(IMG_Load("Bomberman.bmp"), NULL);
 
-    ecran = SDL_SetVideoMode(800,600,32, SDL_HWSURFACE | SDL_DOUBLEBUF);
+    ecran = SDL_SetVideoMode(550,500,32, SDL_HWSURFACE | SDL_DOUBLEBUF);
 
     SDL_WM_SetCaption("Bomberman", NULL);
 
     menu = IMG_Load("menu.png");
 
-    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
+//MUSICA DO MENU
+/*    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
     Mix_Music *musicamenu;
-    musicamenu = Mix_LoadMUS("Menu.mp3");
+    musicamenu = Mix_LoadMUS("Menu.mp3");*/
 
+//POSIÇÃO DO MENU NA TELA
     positionMenu.x=0;
     positionMenu.y=0;
 
-    Mix_PlayMusic(musicamenu, -1);
+//    Mix_PlayMusic(musicamenu, -1);
 
+//EVENTO PARA ENTRAR OU NÃO NO JOGO
     while(continuar)
     {
         SDL_WaitEvent(&event);
@@ -63,7 +67,7 @@ int main(int argc, char *argv[])
         SDL_Flip(ecran);
     }
 
-    Mix_CloseAudio();
+//    Mix_CloseAudio();
     SDL_FreeSurface(menu);
     SDL_Quit();
 
