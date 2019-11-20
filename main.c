@@ -8,11 +8,11 @@
 //INICIALIZAÇÃO DE TELA E MENU
 int main(int argc, char *argv[])
 {
-    SDL_Surface *ecran = NULL;
+    SDL_Surface *tela = NULL;
     SDL_Surface *menu = NULL;
 
-    SDL_Rect positionMenu;
-    SDL_Event event;
+    SDL_Rect PosicaoMenu;
+    SDL_Event evento;
 
     int continuar = 3;
 
@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 
     SDL_WM_SetIcon(IMG_Load("Bomberman.bmp"), NULL);
 
-    ecran = SDL_SetVideoMode(550,500,32, SDL_HWSURFACE | SDL_DOUBLEBUF);
+    tela = SDL_SetVideoMode(550,500,32, SDL_HWSURFACE | SDL_DOUBLEBUF);
 
     SDL_WM_SetCaption("Bomberman", NULL);
 
@@ -32,16 +32,16 @@ int main(int argc, char *argv[])
     musicamenu = Mix_LoadMUS("Menu.mp3");*/
 
 //POSIÇÃO DO MENU NA TELA
-    positionMenu.x=0;
-    positionMenu.y=0;
+    PosicaoMenu.x=0;
+    PosicaoMenu.y=0;
 
 //    Mix_PlayMusic(musicamenu, -1);
 
 //EVENTO PARA ENTRAR OU NÃO NO JOGO
     while(continuar)
     {
-        SDL_WaitEvent(&event);
-        switch(event.type)
+        SDL_WaitEvent(&evento);
+        switch(evento.type)
         {
             case SDL_QUIT:
             continuar = 0;
@@ -49,25 +49,25 @@ int main(int argc, char *argv[])
 
             case SDL_KEYDOWN:
 
-            switch(event.key.keysym.sym)
+            switch(evento.key.keysym.sym)
             {
                 case SDLK_ESCAPE:
                 continuar = 0;
                 break;
 
                 case SDLK_1:
-                jogar(ecran);
+                Jogar(tela);
                 break;
             }
 
             break;
         }
 
-        SDL_BlitSurface(menu, NULL, ecran, &positionMenu);
-        SDL_Flip(ecran);
+        SDL_BlitSurface(menu, NULL, tela, &PosicaoMenu);
+        SDL_Flip(tela);
     }
 
-//    Mix_CloseAudio();
+//   Mix_CloseAudio();
     SDL_FreeSurface(menu);
     SDL_Quit();
 

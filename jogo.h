@@ -7,11 +7,14 @@ typedef struct
 }
 Teclas;
 
-void *gestion_bomba(void*arg);
-void criacao_bomba(int **mapa, SDL_Surface* ecran);
+void *GerenciamentoBombaJ1(void*arg);
+void *GerenciamentoBombaJ2(void*arg);
+
+void CriacaoBombaJ1(int **mapa, SDL_Surface* ecran);
+void CriacaoBombaJ2(int **mapa, SDL_Surface* ecran);
 
 void TecladoAtualizado(Teclas* estado_teclado);
-void jogar(SDL_Surface* ecran);
+void Jogar(SDL_Surface* ecran);
 void movimentojogador(int **mapa, SDL_Rect *pos, int direcao);
 
 #endif // JOGO_H_INCLUDED
