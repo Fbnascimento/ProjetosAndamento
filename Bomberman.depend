@@ -1,12 +1,12 @@
 # depslib dependency file v1.0
-1574263379 source:c:\users\pichau\desktop\bomberman\bomberman\main.c
+1575212368 source:c:\users\pichau\desktop\bomberman\bomberman\main.c
 	<stdlib.h>
 	<stdio.h>
 	<SDL.h>
 	<SDL_image.h>
 	<SDL_mixer.h>
 
-1574263106 source:c:\users\pichau\desktop\bomberman\bomberman\jogo.c
+1575225149 source:c:\users\pichau\desktop\bomberman\bomberman\jogo.c
 	<stdlib.h>
 	<stdio.h>
 	<SDL.h>
@@ -16,7 +16,7 @@
 	"jogo.h"
 	"constante.h"
 
-1574261620 c:\users\pichau\desktop\bomberman\bomberman\jogo.h
+1574263905 c:\users\pichau\desktop\bomberman\bomberman\jogo.h
 
-1574262794 c:\users\pichau\desktop\bomberman\bomberman\constante.h
+1575210151 c:\users\pichau\desktop\bomberman\bomberman\constante.h
 

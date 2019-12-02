@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     menu = IMG_Load("menu.png");
 
 //MUSICA DO MENU
-/*    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
+/*  Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
     Mix_Music *musicamenu;
     musicamenu = Mix_LoadMUS("Menu.mp3");*/
 
