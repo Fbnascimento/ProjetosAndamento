@@ -4,25 +4,17 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
-#include <SDL_ttf.h>
 
 //INICIALIZAÇÃO DE TELA E MENU
 int main(int argc, char *argv[])
 {
     SDL_Surface *tela = NULL;
     SDL_Surface *menu = NULL;
-    SDL_Surface *mensagem = NULL;
 
-    SDL_Rect posicao_menu;
-    SDL_Rect posicao_mensagem;
-
-    TTF_Font *fonte = NULL;
-    SDL_Color cor_texto = {0, 0, 0}, cor = {0, 0, 0};
-
+    SDL_Rect PosicaoMenu;
     SDL_Event evento;
 
     int continuar = 3;
-    char texto_mensagem[30] = "";
 
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -34,29 +26,20 @@ int main(int argc, char *argv[])
 
     menu = IMG_Load("menu.png");
 
-    TTF_Init();
-    fonte = TTF_OpenFont("fonte.ttf", 36);
-
-    sprintf(texto_mensagem, "APERTE 1");
-    mensagem = TTF_RenderText_Blended(fonte, texto_mensagem, cor);
-
 //MUSICA DO MENU
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
-    Mix_Music *musica_menu;
-    musica_menu = Mix_LoadMUS("Menu.mp3");
+    Mix_Music *musicamenu;
+    musicamenu = Mix_LoadMUS("Menu.mp3");
 
 //POSIÇÃO DO MENU NA TELA
-    posicao_menu.x=0;
-    posicao_menu.y=0;
+    PosicaoMenu.x=0;
+    PosicaoMenu.y=0;
 
-    posicao_mensagem.x = 0;
-    posicao_mensagem.y = 0;
+    Mix_PlayMusic(musicamenu, -1);
 
 //EVENTO PARA ENTRAR OU NÃO NO JOGO
     while(continuar)
     {
-        Mix_PlayMusic(musica_menu, -1);
-
         SDL_WaitEvent(&evento);
         switch(evento.type)
         {
@@ -73,21 +56,19 @@ int main(int argc, char *argv[])
                 break;
 
                 case SDLK_1:
-                jogar(tela);
+                Jogar(tela);
                 break;
             }
 
             break;
         }
 
-        SDL_BlitSurface(menu, NULL, tela, &posicao_menu);
-        SDL_BlitSurface(mensagem, NULL, tela, &posicao_mensagem);
+        SDL_BlitSurface(menu, NULL, tela, &PosicaoMenu);
         SDL_Flip(tela);
     }
 
 //   Mix_CloseAudio();
     SDL_FreeSurface(menu);
-    SDL_FreeSurface(mensagem);
     SDL_Quit();
 
     return EXIT_SUCCESS;

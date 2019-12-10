@@ -1,0 +1,2295 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_mixer.h>
+#include <SDL_ttf.h>
+
+#include <pthread.h>
+#include "jogo.h"
+#include "constante.h"
+
+//ESTRUTURAS PARA AS BOMBAS NA TELA
+typedef struct
+{
+int **MapaBombaJ1;
+    SDL_Surface* TelaBombaJ1;
+}BombaJ1;
+
+BombaJ1 J1;
+
+typedef struct
+{
+int **MapaBombaJ2;
+    SDL_Surface* TelaBombaJ1;
+}BombaJ2;
+
+BombaJ2 J2;
+
+//BOMBA VERMELHA
+SDL_Rect PosicaoBombaV1;
+SDL_Rect PosicaoBombaV2;
+
+//CRIAÇÃO EXPLOSÕES DE BOMBAS NA TELA
+SDL_Rect PosicaoExplosaoD;
+SDL_Rect PosicaoExplosaoE;
+SDL_Rect PosicaoExplosaoB;
+SDL_Rect PosicaoExplosaoC;
+SDL_Rect PosicaoExplosaoM;
+
+SDL_Rect PosicaoVitoriaJ2;
+SDL_Rect PosicaoVitoriaJ1;
+
+//TECLADO PARA OS 2 PLAYERS SEM CONFLITO
+void TecladoAtualizado(Teclas* Estado_Teclado)
+{
+    SDL_Event event;
+    while(SDL_PollEvent(&event))
+    {
+        switch (event.type)
+        {
+            case SDL_KEYDOWN:
+            Estado_Teclado -> key[event.key.keysym.sym] = 1;
+            break;
+
+            case SDL_KEYUP:
+            Estado_Teclado -> key[event.key.keysym.sym] = 0;
+            break;
+
+            default:
+            break;
+        }
+    }
+}
+
+//CRICAÇÃO DAS POSIÇÕES DOS PLAYERS
+SDL_Rect Posicao, PosicaoJogador1;
+SDL_Rect Posicao2, PosicaoJogador2;
+
+int jogando = 0;
+int vitoria = 0;
+int derrota = 0;
+
+//FUNÇÃO DO JOGO
+void Jogar(SDL_Surface* tela)
+{
+    Teclas Estado_Teclado;
+    memset(&Estado_Teclado, 0, sizeof(Estado_Teclado));
+
+//CRICAÇÃO DAS IMAGENS
+    SDL_Surface *VitoriaJ1 = NULL;
+    SDL_Surface *VitoriaJ2 = NULL;
+
+    SDL_Surface *JOGADOR1B = NULL;
+    SDL_Surface *JOGADOR1C = NULL;
+    SDL_Surface *JOGADOR1D = NULL;
+    SDL_Surface *JOGADOR1E = NULL;
+
+    SDL_Surface *JOGADOR2B = NULL;
+    SDL_Surface *JOGADOR2C = NULL;
+    SDL_Surface *JOGADOR2D = NULL;
+    SDL_Surface *JOGADOR2E = NULL;
+
+    SDL_Surface *Jogador1Atual = NULL;
+    SDL_Surface *Jogador2Atual = NULL;
+
+    SDL_Surface *Bloco = NULL;
+
+//CRIAÇÃO DA POSIÇÃO DO CENÁRIO E DA SUA IMAGEM
+    SDL_Rect PosicaoCenario;
+    SDL_Surface *Cenario = NULL;
+
+//CRIAÇÃO DAS IMAGENS DE BOMBAS E EXPLOSÃO
+    SDL_Surface *BOMBAV1 = NULL;
+    SDL_Surface *BOMBAV2 = NULL;
+
+    SDL_Surface *BOMBA1 = NULL;
+    SDL_Surface *BOMBA2 = NULL;
+    SDL_Surface *EXPLOSAOB = NULL;
+    SDL_Surface *EXPLOSAOC = NULL;
+    SDL_Surface *EXPLOSAOD = NULL;
+    SDL_Surface *EXPLOSAOE = NULL;
+    SDL_Surface *EXPLOSAOM = NULL;
+
+//CRIAÇÃO DOS BLOCOS ANIMADOS
+    SDL_Surface *Bloco1 = NULL;
+    SDL_Surface *Bloco2 = NULL;
+    SDL_Surface *Bloco3 = NULL;
+    SDL_Surface *Bloco4 = NULL;
+    SDL_Surface *Bloco5 = NULL;
+    SDL_Surface *Bloco6 = NULL;
+
+    jogando = 1;
+
+//CRIAÇÃO DO MAPA
+    int i = 0, j = 0;
+
+    int **mapa = (int**)malloc(13*sizeof(int*));
+
+    for(i = 0; i < 13; i++)
+    {
+        mapa[i] = (int*)malloc((15*sizeof(int)));
+    }
+
+//PAREDE ESQUERDA
+    mapa[0][0] = 1;
+    mapa[1][0] = 1;
+    mapa[2][0] = 1;
+    mapa[3][0] = 1;
+    mapa[4][0] = 1;
+    mapa[5][0] = 1;
+    mapa[6][0] = 1;
+    mapa[7][0] = 1;
+    mapa[8][0] = 1;
+    mapa[9][0] = 1;
+    mapa[10][0] = 1;
+    mapa[11][0] = 1;
+    mapa[12][0] = 1;
+
+//PAREDE DIREITA
+    mapa[0][14] = 1;
+    mapa[1][14] = 1;
+    mapa[2][14] = 1;
+    mapa[3][14] = 1;
+    mapa[4][14] = 1;
+    mapa[5][14] = 1;
+    mapa[6][14] = 1;
+    mapa[7][14] = 1;
+    mapa[8][14] = 1;
+    mapa[9][14] = 1;
+    mapa[10][14] = 1;
+    mapa[11][14] = 1;
+    mapa[12][14] = 1;
+
+//PARADE CIMA
+    mapa[0][1] = 1;
+    mapa[0][2] = 1;
+    mapa[0][3] = 1;
+    mapa[0][4] = 1;
+    mapa[0][5] = 1;
+    mapa[0][6] = 1;
+    mapa[0][7] = 1;
+    mapa[0][8] = 1;
+    mapa[0][9] = 1;
+    mapa[0][10] = 1;
+    mapa[0][11] = 1;
+    mapa[0][12] = 1;
+    mapa[0][13] = 1;
+    mapa[0][14] = 1;
+
+//PAREDE BAIXO
+    mapa[12][1] = 1;
+    mapa[12][2] = 1;
+    mapa[12][3] = 1;
+    mapa[12][4] = 1;
+    mapa[12][5] = 1;
+    mapa[12][6] = 1;
+    mapa[12][7] = 1;
+    mapa[12][8] = 1;
+    mapa[12][9] = 1;
+    mapa[12][10] = 1;
+    mapa[12][11] = 1;
+    mapa[12][12] = 1;
+    mapa[12][13] = 1;
+    mapa[12][14] = 1;
+    mapa[2][2] = 1;
+
+//LINHA DE PAREDE INTERNA 1
+    mapa[2][4] = 1;
+    mapa[2][6] = 1;
+    mapa[2][8] = 1;
+    mapa[2][10] = 1;
+    mapa[2][12] = 1;
+
+//LINHA DE PAREDE INTERNA 2
+    mapa[4][2] = 1;
+    mapa[4][4] = 1;
+    mapa[4][6] = 1;
+    mapa[4][8] = 1;
+    mapa[4][10] = 1;
+    mapa[4][12] = 1;
+
+//LINHA DE PAREDE INTERNA 3
+    mapa[6][2] = 1;
+    mapa[6][4] = 1;
+    mapa[6][6] = 1;
+    mapa[6][8] = 1;
+    mapa[6][10] = 1;
+    mapa[6][12] = 1;
+
+//LINHA DE PAREDE INTERNA 4
+    mapa[8][2] = 1;
+    mapa[8][4] = 1;
+    mapa[8][6] = 1;
+    mapa[8][8] = 1;
+    mapa[8][10] = 1;
+    mapa[8][12] = 1;
+
+//LINHA DE PAREDE INTERNA 5
+    mapa[10][2] = 1;
+    mapa[10][4] = 1;
+    mapa[10][6] = 1;
+    mapa[10][8] = 1;
+    mapa[10][10] = 1;
+    mapa[10][12] = 1;
+
+//BLOCOS DESTRUÍVES
+    mapa[1][3] = 2;
+    mapa[1][4] = 2;
+    mapa[1][5] = 2;
+    mapa[1][6] = 2;
+    mapa[1][6] = 2;
+    mapa[1][7] = 2;
+    mapa[1][8] = 2;
+    mapa[1][9] = 2;
+    mapa[1][10] = 2;
+    mapa[1][11] = 2;
+    mapa[1][12] = 2;
+    mapa[1][13] = 2;
+    mapa[2][3] = 2;
+    mapa[2][5] = 2;
+    mapa[2][7] = 2;
+    mapa[2][9] = 2;
+    mapa[2][11] = 2;
+    mapa[2][13] = 2;
+    mapa[3][1] = 2;
+    mapa[3][2] = 2;
+    mapa[3][3] = 2;
+    mapa[3][4] = 2;
+    mapa[3][5] = 2;
+    mapa[3][6] = 2;
+    mapa[3][7] = 2;
+    mapa[3][8] = 2;
+    mapa[3][9] = 2;
+    mapa[3][10] = 2;
+    mapa[3][11] = 2;
+    mapa[3][12] = 2;
+    mapa[3][13] = 2;
+    mapa[4][1] = 2;
+    mapa[4][3] = 2;
+    mapa[4][5] = 2;
+    mapa[4][7] = 2;
+    mapa[4][9] = 2;
+    mapa[4][11] = 2;
+    mapa[4][13] = 2;
+
+    mapa[5][1] = 2;
+    mapa[5][2] = 2;
+    mapa[5][3] = 2;
+    mapa[5][4] = 2;
+    mapa[5][5] = 2;
+    mapa[5][6] = 2;
+    mapa[5][7] = 2;
+    mapa[5][8] = 2;
+    mapa[5][9] = 2;
+    mapa[5][10] = 2;
+    mapa[5][11] = 2;
+    mapa[5][12] = 2;
+    mapa[5][13] = 2;
+    mapa[6][1] = 2;
+    mapa[6][3] = 2;
+    mapa[6][5] = 2;
+    mapa[6][7] = 2;
+    mapa[6][9] = 2;
+    mapa[6][11] = 2;
+    mapa[6][13] = 2;
+
+    mapa[7][1] = 2;
+    mapa[7][2] = 2;
+    mapa[7][3] = 2;
+    mapa[7][4] = 2;
+    mapa[7][5] = 2;
+    mapa[7][6] = 2;
+    mapa[7][7] = 2;
+    mapa[7][8] = 2;
+    mapa[7][9] = 2;
+    mapa[7][10] = 2;
+    mapa[7][11] = 2;
+    mapa[7][12] = 2;
+    mapa[7][13] = 2;
+
+    mapa[8][1] = 2;
+    mapa[8][3] = 2;
+    mapa[8][5] = 2;
+    mapa[8][7] = 2;
+    mapa[8][9] = 2;
+    mapa[8][11] = 2;
+    mapa[8][13] = 2;
+
+    mapa[9][1] = 2;
+    mapa[9][2] = 2;
+    mapa[9][3] = 2;
+    mapa[9][4] = 2;
+    mapa[9][5] = 2;
+    mapa[9][6] = 2;
+    mapa[9][7] = 2;
+    mapa[9][8] = 2;
+    mapa[9][9] = 2;
+    mapa[9][10] = 2;
+    mapa[9][11] = 2;
+    mapa[9][12] = 2;
+    mapa[9][13] = 2;
+
+    mapa[10][1] = 2;
+    mapa[10][3] = 2;
+    mapa[10][5] = 2;
+    mapa[10][7] = 2;
+    mapa[10][9] = 2;
+    mapa[10][11] = 2;
+
+    mapa[11][1] = 2;
+    mapa[11][2] = 2;
+    mapa[11][3] = 2;
+    mapa[11][4] = 2;
+    mapa[11][5] = 2;
+    mapa[11][6] = 2;
+    mapa[11][7] = 2;
+    mapa[11][8] = 2;
+    mapa[11][9] = 2;
+    mapa[11][10] = 2;
+    mapa[11][11] = 2;
+
+//CRIAÇÃO DA MÚSICA DE BATALHA
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
+
+    Mix_Music *Musicabatalha = NULL;
+    Musicabatalha = Mix_LoadMUS("Batalha.mp3");
+
+    Mix_PlayMusic(Musicabatalha, -1);
+
+//CARREGAMENTO DAS IMAGENS
+    VitoriaJ1 = IMG_Load("VitoriaJ1.bmp");
+    VitoriaJ2 = IMG_Load("VitoriaJ2.bmp");
+
+    BOMBAV1 = IMG_Load("BombaV.bmp");
+    BOMBAV2 = IMG_Load("BombaV.bmp");
+
+    BOMBA1 = IMG_Load("Bomba2.bmp");
+    BOMBA2 = IMG_Load("Bomba2.bmp");
+
+    EXPLOSAOB = IMG_Load("ExplosaoB.bmp");
+    EXPLOSAOC = IMG_Load("ExplosaoC.bmp");
+    EXPLOSAOD = IMG_Load("ExplosaoD.bmp");
+    EXPLOSAOE = IMG_Load("ExplosaoE.bmp");
+    EXPLOSAOM = IMG_Load("ExplosaoM.bmp");
+
+    JOGADOR1B = IMG_Load("BombermanF.png");
+    JOGADOR1E = IMG_Load("BombermanE.png");
+    JOGADOR1D = IMG_Load("BombermanD.png");
+    JOGADOR1C = IMG_Load("BombermanC.png");
+
+    JOGADOR2B = IMG_Load("BombermanBF.png");
+    JOGADOR2E = IMG_Load("BombermanBE.png");
+    JOGADOR2D = IMG_Load("BombermanBD.png");
+    JOGADOR2C = IMG_Load("BombermanBC.png");
+
+    Bloco = IMG_Load("Bloco.png");
+    Cenario = IMG_Load("Cenario.bmp");
+
+    Bloco1 = IMG_Load("Bloco1.bmp");
+    Bloco2 = IMG_Load("Bloco2.bmp");
+    Bloco3 = IMG_Load("Bloco3.bmp");
+    Bloco4 = IMG_Load("Bloco4.bmp");
+    Bloco5 = IMG_Load("Bloco5.bmp");
+    Bloco6 = IMG_Load("Bloco6.bmp");
+
+    Jogador1Atual = JOGADOR1B;
+    Jogador2Atual = JOGADOR2B;
+
+//POSIÇÃO DOS JOGADORES NA TELA
+    PosicaoJogador1.x = 1;
+    PosicaoJogador1.y = 1;
+
+    PosicaoJogador2.x = 13;
+    PosicaoJogador2.y = 11;
+
+//POSIÇÃO DOS JOGADORES NA MATRIZ
+    mapa[1][1] = 0;
+    mapa[11][13] = 0;
+    mapa[1][2] = 0;
+    mapa[2][1] = 0;
+    mapa[11][12] = 0;
+    mapa[10][13] = 0;
+
+//MOVIMENTAÇÃO DOS JOGADORES
+    while(jogando == 1)
+    {
+        TecladoAtualizado(&Estado_Teclado);
+
+        if (Estado_Teclado.key[SDLK_UP])
+        {
+            Jogador1Atual = JOGADOR1C;
+            MovimentoJogador(mapa, &PosicaoJogador1, CIMA);
+        }
+        if (Estado_Teclado.key[SDLK_DOWN])
+        {
+            Jogador1Atual = JOGADOR1B;
+            MovimentoJogador(mapa, &PosicaoJogador1, BAIXO);
+        }
+        if (Estado_Teclado.key[SDLK_RIGHT])
+        {
+            Jogador1Atual = JOGADOR1D;
+            MovimentoJogador(mapa, &PosicaoJogador1, DIREITA);
+        }
+        if (Estado_Teclado.key[SDLK_LEFT])
+        {
+            Jogador1Atual = JOGADOR1E;
+            MovimentoJogador(mapa, &PosicaoJogador1, ESQUERDA);
+        }
+        if (Estado_Teclado.key[SDLK_m])
+        {
+            CriacaoBombaJ1 (mapa, tela);
+        }
+
+        if (Estado_Teclado.key[SDLK_w])
+        {
+            Jogador2Atual = JOGADOR2C;
+            MovimentoJogador(mapa, &PosicaoJogador2, CIMA);
+        }
+        if (Estado_Teclado.key[SDLK_s])
+        {
+            Jogador2Atual = JOGADOR2B;
+            MovimentoJogador(mapa, &PosicaoJogador2, BAIXO);
+        }
+        if (Estado_Teclado.key[SDLK_d])
+        {
+            Jogador2Atual = JOGADOR2D;
+            MovimentoJogador(mapa, &PosicaoJogador2, DIREITA);
+        }
+        if (Estado_Teclado.key[SDLK_a])
+        {
+            Jogador2Atual = JOGADOR2E;
+            MovimentoJogador(mapa, &PosicaoJogador2, ESQUERDA);
+        }
+        if (Estado_Teclado.key[SDLK_p])
+        {
+            CriacaoBombaJ2(mapa, tela);
+        }
+
+        if (Estado_Teclado.key[SDLK_ESCAPE])
+        {
+            jogando = 0;
+        }
+
+        SDL_FillRect(tela,NULL,SDL_MapRGB(tela -> format,0,0,0));
+
+//POSIÇÃO DO CENARIO NA TELA
+        PosicaoCenario.x = 0;
+        PosicaoCenario.y = 23;
+
+        SDL_BlitSurface(Cenario, NULL, tela, &PosicaoCenario);
+
+//CRIAÇÃO ANIMAÇÃO DOS BLOCOS E EFEITOS DE EXPLOSÃO
+        for (i = 1; i < 13; i++)
+        {
+            for (j = 1; j < 15; j++)
+            {
+               Posicao.x = j*Tamanho_Bloco;
+               Posicao.y = i*Tamanho_Bloco+24;
+
+                switch(mapa[i][j])
+                {
+                    case 2:
+                    SDL_BlitSurface(Bloco, NULL, tela, &Posicao);
+                    break;
+
+                    case 5:
+                    SDL_BlitSurface(BOMBA1, NULL, tela, &Posicao);
+                    break;
+
+                    case 10:
+                    SDL_BlitSurface(EXPLOSAOM, NULL, tela, &Posicao);
+                    break;
+
+                    case 6:
+                    SDL_BlitSurface(EXPLOSAOB, NULL, tela, &Posicao);
+                    break;
+
+                    case 7:
+                    SDL_BlitSurface(EXPLOSAOC, NULL, tela, &Posicao);
+                    break;
+
+                    case 8:
+                    SDL_BlitSurface(EXPLOSAOD, NULL, tela, &Posicao);
+                    break;
+
+                    case 9:
+                    SDL_BlitSurface(EXPLOSAOE, NULL, tela, &Posicao);
+                    break;
+
+                    case 11:
+                    SDL_BlitSurface(BOMBA2, NULL, tela, &Posicao);
+                    break;
+
+                    case 12:
+                    SDL_BlitSurface(Bloco1, NULL, tela, &Posicao);
+                    break;
+
+                    case 13:
+                    SDL_BlitSurface(Bloco2, NULL, tela, &Posicao);
+                    break;
+
+                    case 14:
+                    SDL_BlitSurface(Bloco3, NULL, tela, &Posicao);
+                    break;
+
+                    case 15:
+                    SDL_BlitSurface(Bloco4, NULL, tela, &Posicao);
+                    break;
+
+                    case 16:
+                    SDL_BlitSurface(Bloco5, NULL, tela, &Posicao);
+                    break;
+
+                    case 17:
+                    SDL_BlitSurface(Bloco6, NULL, tela, &Posicao);
+                    break;
+
+                    case 18:
+                    SDL_BlitSurface(BOMBAV1, NULL, tela, &Posicao);
+                    break;
+
+                    case 19:
+                    SDL_BlitSurface(BOMBAV2, NULL, tela, &Posicao);
+                    break;
+                }
+            }
+        }
+
+        Posicao.x = PosicaoJogador1.x*Tamanho_Bloco;
+        Posicao.y = PosicaoJogador1.y*Tamanho_Bloco;
+
+        SDL_BlitSurface(Jogador1Atual,NULL,tela,&Posicao);
+
+        Posicao2.x = PosicaoJogador2.x*Tamanho_Bloco;
+        Posicao2.y = PosicaoJogador2.y*Tamanho_Bloco;
+
+        SDL_BlitSurface(Jogador2Atual,NULL,tela,&Posicao2);
+
+//VELOCIDADE DE MOVIMENTO DOS JOGADORES
+        usleep(150000);
+
+        SDL_Flip(tela);
+    }
+
+    if(jogando == 100)//vitoria p2
+    {
+        PosicaoVitoriaJ2.x = 10;
+        PosicaoVitoriaJ2.y = 10;
+
+        SDL_BlitSurface(VitoriaJ2,NULL,tela,&PosicaoVitoriaJ2);
+
+        Mix_CloseAudio();
+        Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
+        Mix_Music *audiovitoria = NULL;
+        audiovitoria = Mix_LoadMUS("AudioVitoria.mp3");
+        Mix_PlayMusic(audiovitoria, 0);
+
+        SDL_Delay(10000);
+
+        SDL_Flip(tela);
+
+        jogando = 0;
+    }
+    if(jogando == 101)//vitoria p1
+    {
+        Mix_CloseAudio();
+        Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
+        Mix_Music *audiovitoria = NULL;
+        audiovitoria = Mix_LoadMUS("AudioVitoria.mp3");
+        Mix_PlayMusic(audiovitoria, 0);
+
+        PosicaoVitoriaJ1.x = 0;
+
+        SDL_BlitSurface(VitoriaJ1,NULL,tela,&PosicaoVitoriaJ1);
+
+        SDL_Delay(10000);
+
+        SDL_Flip(tela);
+
+        jogando = 0;
+    }
+
+//LIBERAÇÃO DAS IMAGENS NA TELA
+    SDL_FreeSurface(Bloco);
+
+    SDL_FreeSurface(JOGADOR1B);
+    SDL_FreeSurface(JOGADOR1C);
+    SDL_FreeSurface(JOGADOR1D);
+    SDL_FreeSurface(JOGADOR1E);
+
+    SDL_FreeSurface(JOGADOR2B);
+    SDL_FreeSurface(JOGADOR2C);
+    SDL_FreeSurface(JOGADOR2D);
+    SDL_FreeSurface(JOGADOR2E);
+
+    SDL_FreeSurface(BOMBAV1);
+    SDL_FreeSurface(BOMBAV2);
+
+    SDL_FreeSurface(BOMBA1);
+    SDL_FreeSurface(BOMBA2);
+    SDL_FreeSurface(EXPLOSAOB);
+    SDL_FreeSurface(EXPLOSAOC);
+    SDL_FreeSurface(EXPLOSAOD);
+    SDL_FreeSurface(EXPLOSAOE);
+    SDL_FreeSurface(EXPLOSAOM);
+
+    SDL_FreeSurface(Bloco1);
+    SDL_FreeSurface(Bloco2);
+    SDL_FreeSurface(Bloco3);
+    SDL_FreeSurface(Bloco4);
+    SDL_FreeSurface(Bloco5);
+    SDL_FreeSurface(Bloco6);
+
+    SDL_FreeSurface(VitoriaJ1);
+    SDL_FreeSurface(VitoriaJ2);
+}
+
+//COLISÃO DOS JOGADORES COM CENÁRIO,  BLOCOS E BOMBAS
+void MovimentoJogador(int **mapa, SDL_Rect *pos, int direcao)
+{
+    switch(direcao)
+    {
+        case CIMA:
+
+        if (mapa[pos -> y - 1][pos -> x] == PAREDE)
+        {
+            break;
+        }
+        if (mapa[pos -> y - 1][pos -> x] == Bloco)
+        {
+            break;
+        }
+        if (mapa[pos -> y - 1][pos -> x] == BOMBA1)
+        {
+            break;
+        }
+        if (mapa[pos -> y - 1][pos -> x] == BOMBA2)
+        {
+            break;
+        }
+        if (mapa[pos -> y - 1][pos -> x] == BOMBAV1)
+        {
+            break;
+        }
+        if (mapa[pos -> y - 1][pos -> x] == BOMBAV2)
+        {
+            break;
+        }
+
+        pos-> y--;
+        break;
+
+        case BAIXO:
+
+        if (mapa[pos -> y + 1][pos -> x] == PAREDE)
+        {
+            break;
+        }
+        if (mapa[pos -> y + 1][pos -> x] == Bloco)
+        {
+            break;
+        }
+        if (mapa[pos -> y + 1][pos -> x] == BOMBA1)
+        {
+            break;
+        }
+        if (mapa[pos -> y + 1][pos -> x] == BOMBA2)
+        {
+            break;
+        }
+        if (mapa[pos -> y + 1][pos -> x] == BOMBAV1)
+        {
+            break;
+        }
+        if (mapa[pos -> y + 1][pos -> x] == BOMBAV2)
+        {
+            break;
+        }
+
+        pos-> y++;
+        break;
+
+        case ESQUERDA:
+
+        if (mapa[pos -> y][pos -> x - 1] == PAREDE)
+        {
+            break;
+        }
+        if (mapa[pos -> y][pos -> x - 1] == Bloco)
+        {
+            break;
+        }
+        if (mapa[pos -> y][pos -> x - 1] == BOMBA1)
+        {
+            break;
+        }
+        if (mapa[pos -> y][pos -> x - 1] == BOMBA2)
+        {
+            break;
+        }
+        if (mapa[pos -> y][pos -> x - 1] == BOMBAV1)
+        {
+            break;
+        }
+            if (mapa[pos -> y][pos -> x - 1] == BOMBAV2)
+        {
+            break;
+        }
+
+        pos-> x--;
+        break;
+
+        case DIREITA:
+
+        if (mapa[pos -> y][pos -> x + 1] == PAREDE)
+        {
+            break;
+        }
+        if (mapa[pos -> y][pos -> x + 1] == Bloco)
+        {
+            break;
+        }
+        if (mapa[pos -> y][pos -> x + 1] == BOMBA1)
+        {
+            break;
+        }
+        if (mapa[pos -> y][pos -> x + 1] == BOMBA2)
+        {
+            break;
+        }
+        if (mapa[pos -> y][pos -> x + 1] == BOMBAV1)
+        {
+            break;
+        }
+        if (mapa[pos -> y][pos -> x + 1] == BOMBAV2)
+        {
+            break;
+        }
+
+        pos-> x++;
+        break;
+    }
+}
+
+//LIMITAÇÃO DAS BOMBAS DO JOGADOR 1
+void CriacaoBombaJ1 (int **mapa, SDL_Surface* tela)
+{
+    pthread_t LimitebombaJ1;
+
+    J1.MapaBombaJ1 = mapa;
+    J1.TelaBombaJ1 = tela;
+
+    pthread_create(&LimitebombaJ1, NULL, GerenciamentoBombaJ1, (void*)&J1);
+}
+
+//LIMITAÇÃO DAS BOMBAS DO JOGADOR 2
+void CriacaoBombaJ2 (int **mapa, SDL_Surface* tela)
+{
+    pthread_t LimitebombaJ2;
+
+    J2.MapaBombaJ2 = mapa;
+    J2.TelaBombaJ1 = tela;
+
+    pthread_create(&LimitebombaJ2, NULL, GerenciamentoBombaJ2, (void*)&J2);
+}
+
+// INTERAÇÃO DA BOMBA, JOGADOR 1, COM O CENÁRIO
+void *GerenciamentoBombaJ1(void*arg)
+{
+    BombaJ1 *args = (BombaJ1*)arg;
+    int **MapaBombaJ1 = args -> MapaBombaJ1;
+
+    int a, b;
+
+    for(a = 1; a < 13; a++)
+    {
+        for (b = 1; b < 15; b++)
+        {
+            if (MapaBombaJ1[a][b] == BOMBA1 || MapaBombaJ1[a][b] == BOMBAV1)
+            {
+                pthread_exit(NULL);
+            }
+        }
+    }
+
+    Mix_Music *ExplosaoBJ1;
+    ExplosaoBJ1 = Mix_LoadWAV("ExplosaoB1.wav");
+
+    Mix_Music *DropBJ1;
+    DropBJ1 = Mix_LoadWAV("DropB1.wav");
+
+    /*int Jg1L = 0, Jg2L = 0, Jg1C = 0, Jg2C = 0;
+    int WinR = 0, WinL = 0, WinU = 0, WinD = 0;
+    int LoseR = 0, LoseL = 0, LoseU = 0, LoseD = 0;
+
+    int BlocoUp = 0, BlocoDown = 0, BlocoLeft = 0, BlocoRight = 0;
+    int BlocoSoma = 0, UpL = 0, UpC = 0, DownL = 0, DownC = 0;
+    int LeftL = 0, LeftC = 0, RightL = 0, RightC = 0;*/
+
+    MapaBombaJ1[PosicaoJogador1.y][PosicaoJogador1.x] = BOMBA1;
+
+    Mix_PlayChannel(-1, DropBJ1, 0);
+
+
+    for(a = 1; a < 13; a++)
+    {
+        for (b = 1; b < 15; b++)
+        {
+            if (MapaBombaJ1[a][b] == 5)
+            {
+                MapaBombaJ1[a][b] = 18;
+                SDL_Delay(500);
+                MapaBombaJ1[a][b] = 5;
+                SDL_Delay(500);
+                MapaBombaJ1[a][b] = 18;
+                SDL_Delay(500);
+                MapaBombaJ1[a][b] = 5;
+                SDL_Delay(500);
+                MapaBombaJ1[a][b] = 18;
+                SDL_Delay(500);
+                MapaBombaJ1[a][b] = 5;
+                SDL_Delay(500);
+
+                Mix_PlayChannel(-1, ExplosaoBJ1, 0);
+            }
+        }
+    }
+
+    for(a = 1; a < 13; a++)
+    {
+        for (b = 1; b < 15; b++)
+        {
+            if (MapaBombaJ1[a][b] == 5)
+            {
+                MapaBombaJ1[a][b] = 10;
+
+                if (MapaBombaJ1[a][b] == MapaBombaJ1[PosicaoJogador1.y][PosicaoJogador1.x])
+                {
+                    vitoria = 2;
+                }
+
+                if (MapaBombaJ1[a][b] == MapaBombaJ1[PosicaoJogador2.y][PosicaoJogador2.x])
+                {
+                    vitoria = 1;
+                }
+
+                if (MapaBombaJ1[a+1][b] == 0)
+                {
+                    MapaBombaJ1[a+1][b] = 6;
+                }
+                if (MapaBombaJ1[a+1][b] == MapaBombaJ1[PosicaoJogador1.y][PosicaoJogador1.x])
+                {
+                    MapaBombaJ1[a+1][b] = 6;
+
+                    vitoria = 2;
+                }
+                if (MapaBombaJ1[a+1][b] == MapaBombaJ1[PosicaoJogador2.y][PosicaoJogador2.x])
+                {
+                    MapaBombaJ1[a+1][b] = 6;
+
+                    vitoria = 1;
+                }
+                if (MapaBombaJ1[a+1][b] == 2)
+                {
+                    //BlocoDown = 5;
+                    //DownL = a+1;
+                    //DownC = b;
+                }
+
+                if (MapaBombaJ1[a-1][b] == 0)
+                {
+                    MapaBombaJ1[a-1][b] = 7;
+                }
+                if (MapaBombaJ1[a-1][b] == MapaBombaJ1[PosicaoJogador1.y][PosicaoJogador1.x])
+                {
+                    MapaBombaJ1[a-1][b] = 7;
+
+                    vitoria = 2;
+                }
+                if (MapaBombaJ1[a-1][b] == MapaBombaJ1[PosicaoJogador2.y][PosicaoJogador2.x])
+                {
+                    MapaBombaJ1[a-1][b] = 7;
+
+                    vitoria = 1;
+                }
+                if (MapaBombaJ1[a-1][b] == 2)
+                {
+                    //BlocoUp = 3;
+                    //UpL = a-1;
+                    //UpC = b;
+                }
+
+                if (MapaBombaJ1[a][b+1] == 0)
+                {
+                    MapaBombaJ1[a][b+1] = 8;
+                }
+                if (MapaBombaJ1[a][b+1] == MapaBombaJ1[PosicaoJogador1.y][PosicaoJogador1.x])
+                {
+                    MapaBombaJ1[a][b+1] = 8;
+
+                    vitoria = 2;
+                }
+                if (MapaBombaJ1[a][b+1] == MapaBombaJ1[PosicaoJogador2.y][PosicaoJogador2.x])
+                {
+                    MapaBombaJ1[a][b+1] = 8;
+
+                    vitoria = 1;
+                }
+                if (MapaBombaJ1[a][b+1] == 2)
+                {
+                    //BlocoRight = 11;
+                    //RightL = a;
+                    //RightC = b+1;
+                }
+
+                if (MapaBombaJ1[a][b-1] == 0)
+                {
+                    MapaBombaJ1[a][b-1] = 9;
+                }
+                if (MapaBombaJ1[a][b-1] == MapaBombaJ1[PosicaoJogador1.y][PosicaoJogador1.x])
+                {
+                    MapaBombaJ1[a][b-1] = 9;
+
+                    vitoria = 2;
+                }
+                if (MapaBombaJ1[a][b-1] == MapaBombaJ1[PosicaoJogador2.y][PosicaoJogador2.x])
+                {
+                    MapaBombaJ1[a][b-1] = 9;
+
+                    vitoria = 1;
+                }
+                if (MapaBombaJ1[a][b-1] == 2)
+                {
+                  //  BlocoLeft = 7;
+                  //  LeftL = a;
+                  //  LeftC = b-1;
+                }
+            }
+        }
+    }
+
+//ANIMAÇÃO BLOCOS SENDO DESTRUIDOS
+
+  /*  BlocoSoma = BlocoDown + BlocoLeft + BlocoRight + BlocoUp;
+
+    switch (BlocoSoma)
+    {
+        case 3:
+        MapaBombaJ1[UpL][UpC] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 0;
+
+        BlocoSoma = 0, BlocoDown = 0, BlocoLeft = 0;
+        BlocoRight = 0, BlocoUp = 0, UpL = 0, UpC = 0;
+        RightC = 0, RightL = 0, DownC = 0, DownL = 0;
+        LeftC = 0, LeftC = 0;
+        break;
+
+        case 5:
+        MapaBombaJ1[DownL][DownC] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 0;
+
+        BlocoSoma = 0, BlocoDown = 0, BlocoLeft = 0;
+        BlocoRight = 0, BlocoUp = 0, UpL = 0, UpC = 0;
+        RightC = 0, RightL = 0, DownC = 0, DownL = 0;
+        LeftC = 0, LeftC = 0;
+        break;
+
+        case 7:
+        MapaBombaJ1[LeftL][LeftC] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ1[LeftL][LeftC] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ1[LeftL][LeftC] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ1[LeftL][LeftC] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ1[LeftL][LeftC] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ1[LeftL][LeftC] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ1[LeftL][LeftC] = 0;
+
+        BlocoSoma = 0, BlocoDown = 0, BlocoLeft = 0;
+        BlocoRight = 0, BlocoUp = 0, UpL = 0, UpC = 0;
+        RightC = 0, RightL = 0, DownC = 0, DownL = 0;
+        LeftC = 0, LeftC = 0;
+        break;
+
+        case 8:
+        MapaBombaJ1[UpL][UpC] = 12;
+        MapaBombaJ1[DownL][DownC] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 13;
+        MapaBombaJ1[DownL][DownC] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 14;
+        MapaBombaJ1[DownL][DownC] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 15;
+        MapaBombaJ1[DownL][DownC] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 16;
+        MapaBombaJ1[DownL][DownC] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 17;
+        MapaBombaJ1[DownL][DownC] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 0;
+        MapaBombaJ1[DownL][DownC] = 0;
+
+        BlocoSoma = 0, BlocoDown = 0, BlocoLeft = 0;
+        BlocoRight = 0, BlocoUp = 0, UpL = 0, UpC = 0;
+        RightC = 0, RightL = 0, DownC = 0, DownL = 0;
+        LeftC = 0, LeftC = 0;
+        break;
+
+        case 10:
+        MapaBombaJ1[UpL][UpC] = 12;
+        MapaBombaJ1[LeftL][LeftC] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 13;
+        MapaBombaJ1[LeftL][LeftC] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 14;
+        MapaBombaJ1[LeftL][LeftC] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 15;
+        MapaBombaJ1[LeftL][LeftC] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 16;
+        MapaBombaJ1[LeftL][LeftC] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 17;
+        MapaBombaJ1[LeftL][LeftC] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 0;
+        MapaBombaJ1[LeftL][LeftC] = 0;
+
+        BlocoSoma = 0, BlocoDown = 0, BlocoLeft = 0;
+        BlocoRight = 0, BlocoUp = 0, UpL = 0, UpC = 0;
+        RightC = 0, RightL = 0, DownC = 0, DownL = 0;
+        LeftC = 0, LeftC = 0;
+        break;
+
+        case 11:
+        MapaBombaJ1[RightL][RightC] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 17; //17
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 0;
+
+        BlocoSoma = 0, BlocoDown = 0, BlocoLeft = 0;
+        BlocoRight = 0, BlocoUp = 0, UpL = 0, UpC = 0;
+        RightC = 0, RightL = 0, DownC = 0, DownL = 0;
+        LeftC = 0, LeftC = 0;
+        break;
+
+        case 12:
+        MapaBombaJ1[DownL][DownC] = 12; //12
+        MapaBombaJ1[LeftL][LeftC] = 12; //12
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 13; //13
+        MapaBombaJ1[LeftL][LeftC] = 13; //13
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 14; //14
+        MapaBombaJ1[LeftL][LeftC] = 14; //14
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 15; //15
+        MapaBombaJ1[LeftL][LeftC] = 15; //15
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 16; //16
+        MapaBombaJ1[LeftL][LeftC] = 16; //16
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 17; //17
+        MapaBombaJ1[LeftL][LeftC] = 17; //17
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 0;
+        MapaBombaJ1[LeftL][LeftC] = 0;
+
+        BlocoSoma = 0, BlocoDown = 0, BlocoLeft = 0;
+        BlocoRight = 0, BlocoUp = 0, UpL = 0, UpC = 0;
+        RightC = 0, RightL = 0, DownC = 0, DownL = 0;
+        LeftC = 0, LeftC = 0;
+        break;
+
+        case 14:
+        MapaBombaJ1[RightL][RightC] = 12; //12
+        MapaBombaJ1[UpL][UpC] = 12; //12
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 13; //13
+        MapaBombaJ1[UpL][UpC] = 13; //13
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 14; //14
+        MapaBombaJ1[UpL][UpC] = 14; //14
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 15; //15
+        MapaBombaJ1[UpL][UpC] = 15; //15
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 16; //16
+        MapaBombaJ1[UpL][UpC] = 16; //16
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 17; //17
+        MapaBombaJ1[UpL][UpC] = 17; //17
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 0;
+        MapaBombaJ1[UpL][UpC] = 0;
+
+        BlocoSoma = 0, BlocoDown = 0, BlocoLeft = 0;
+        BlocoRight = 0, BlocoUp = 0, UpL = 0, UpC = 0;
+        RightC = 0, RightL = 0, DownC = 0, DownL = 0;
+        LeftC = 0, LeftC = 0;
+        break;
+
+        case 15:
+        MapaBombaJ1[UpL][UpC] = 12; //12
+        MapaBombaJ1[DownL][DownC] = 12; //12
+        MapaBombaJ1[LeftL][LeftC] = 12; //12
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 13; //13
+        MapaBombaJ1[DownL][DownC] = 13; //13
+        MapaBombaJ1[LeftL][LeftC] = 13; //13
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 14; //14
+        MapaBombaJ1[DownL][DownC] = 14; //14
+        MapaBombaJ1[LeftL][LeftC] = 14; //14
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 15; //15
+        MapaBombaJ1[DownL][DownC] = 15; //15
+        MapaBombaJ1[LeftL][LeftC] = 15; //15
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 16; //16
+        MapaBombaJ1[DownL][DownC] = 16; //16
+        MapaBombaJ1[LeftL][LeftC] = 16; //16
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 17; //17
+        MapaBombaJ1[DownL][DownC] = 17; //17
+        MapaBombaJ1[LeftL][LeftC] = 17; //17
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 0;
+        MapaBombaJ1[DownL][DownC] = 0;
+        MapaBombaJ1[LeftL][LeftC] = 0;
+
+        BlocoSoma = 0, BlocoDown = 0, BlocoLeft = 0;
+        BlocoRight = 0, BlocoUp = 0, UpL = 0, UpC = 0;
+        RightC = 0, RightL = 0, DownC = 0, DownL = 0;
+        LeftC = 0, LeftC = 0;
+        break;
+
+        case 16:
+        MapaBombaJ1[RightL][RightC] = 12; //12
+        MapaBombaJ1[DownL][DownC] = 12; //12
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 13; //13
+        MapaBombaJ1[DownL][DownC] = 13; //13
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 14; //14
+        MapaBombaJ1[DownL][DownC] = 14; //14
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 15; //15
+        MapaBombaJ1[DownL][DownC] = 15; //15
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 16; //16
+        MapaBombaJ1[DownL][DownC] = 16; //16
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 17; //17
+        MapaBombaJ1[DownL][DownC] = 17; //17
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 0;
+        MapaBombaJ1[DownL][DownC] = 0;
+
+        BlocoSoma = 0, BlocoDown = 0, BlocoLeft = 0;
+        BlocoRight = 0, BlocoUp = 0, UpL = 0, UpC = 0;
+        RightC = 0, RightL = 0, DownC = 0, DownL = 0;
+        LeftC = 0, LeftC = 0;
+        break;
+
+        case 18:
+        MapaBombaJ1[RightL][RightC] = 12; //12
+        MapaBombaJ1[LeftL][LeftC] = 12; //12
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 13; //13
+        MapaBombaJ1[LeftL][LeftC] = 13; //13
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 14; //14
+        MapaBombaJ1[LeftL][LeftC] = 14; //14
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 15; //15
+        MapaBombaJ1[LeftL][LeftC] = 15; //15
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 16; //16
+        MapaBombaJ1[LeftL][LeftC] = 16; //16
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 17; //17
+        MapaBombaJ1[LeftL][LeftC] = 17; //17
+        SDL_Delay(50);
+
+        MapaBombaJ1[RightL][RightC] = 0;
+        MapaBombaJ1[LeftL][LeftC] = 0;
+
+        BlocoSoma = 0, BlocoDown = 0, BlocoLeft = 0;
+        BlocoRight = 0, BlocoUp = 0, UpL = 0, UpC = 0;
+        RightC = 0, RightL = 0, DownC = 0, DownL = 0;
+        LeftC = 0, LeftC = 0;
+        break;
+
+        case 19:
+        MapaBombaJ1[UpL][UpC] = 12; //12
+        MapaBombaJ1[DownL][DownC] = 12; //12
+        MapaBombaJ1[RightL][RightC] = 12; //12
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 13; //13
+        MapaBombaJ1[DownL][DownC] = 13; //13
+        MapaBombaJ1[RightL][RightC] = 13; //13
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 14; //14
+        MapaBombaJ1[DownL][DownC] = 14; //14
+        MapaBombaJ1[RightL][RightC] = 14; //14
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 15; //15
+        MapaBombaJ1[DownL][DownC] = 15; //15
+        MapaBombaJ1[RightL][RightC] = 15; //15
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 16; //16
+        MapaBombaJ1[DownL][DownC] = 16; //16
+        MapaBombaJ1[RightL][RightC] = 16; //16
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 17; //17
+        MapaBombaJ1[DownL][DownC] = 17; //17
+        MapaBombaJ1[RightL][RightC] = 17; //17
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 0;
+        MapaBombaJ1[DownL][DownC] = 0;
+        MapaBombaJ1[RightL][RightC] = 0;
+
+        BlocoSoma = 0, BlocoDown = 0, BlocoLeft = 0;
+        BlocoRight = 0, BlocoUp = 0, UpL = 0, UpC = 0;
+        RightC = 0, RightL = 0, DownC = 0, DownL = 0;
+        LeftC = 0, LeftC = 0;
+        break;
+
+        case 21:
+        MapaBombaJ1[UpL][UpC] = 12; //12
+        MapaBombaJ1[LeftL][LeftC] = 12; //12
+        MapaBombaJ1[RightL][RightC] = 12; //12
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 13; //13
+        MapaBombaJ1[LeftL][LeftC] = 13; //13
+        MapaBombaJ1[RightL][RightC] = 13; //13
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 14; //14
+        MapaBombaJ1[LeftL][LeftC] = 14; //14
+        MapaBombaJ1[RightL][RightC] = 14; //14
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 15; //15
+        MapaBombaJ1[LeftL][LeftC] = 15; //15
+        MapaBombaJ1[RightL][RightC] = 15; //15
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 16; //16
+        MapaBombaJ1[LeftL][LeftC] = 16; //16
+        MapaBombaJ1[RightL][RightC] = 16; //16
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 17; //17
+        MapaBombaJ1[LeftL][LeftC] = 17; //17
+        MapaBombaJ1[RightL][RightC] = 17; //17
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 0;
+        MapaBombaJ1[LeftL][LeftC] = 0;
+        MapaBombaJ1[RightL][RightC] = 0;
+
+        BlocoSoma = 0, BlocoDown = 0, BlocoLeft = 0;
+        BlocoRight = 0, BlocoUp = 0, UpL = 0, UpC = 0;
+        RightC = 0, RightL = 0, DownC = 0, DownL = 0;
+        LeftC = 0, LeftC = 0;
+        break;
+
+        case 23:
+        MapaBombaJ1[DownL][DownC] = 12; //12
+        MapaBombaJ1[LeftL][LeftC] = 12; //12
+        MapaBombaJ1[RightL][RightC] = 12; //12
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 13; //13
+        MapaBombaJ1[LeftL][LeftC] = 13; //13
+        MapaBombaJ1[RightL][RightC] = 13; //13
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 14; //14
+        MapaBombaJ1[LeftL][LeftC] = 14; //14
+        MapaBombaJ1[RightL][RightC] = 14; //14
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 15; //15
+        MapaBombaJ1[LeftL][LeftC] = 15; //15
+        MapaBombaJ1[RightL][RightC] = 15; //15
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 16; //16
+        MapaBombaJ1[LeftL][LeftC] = 16; //16
+        MapaBombaJ1[RightL][RightC] = 16; //16
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 17; //17
+        MapaBombaJ1[LeftL][LeftC] = 17; //17
+        MapaBombaJ1[RightL][RightC] = 17; //17
+        SDL_Delay(50);
+
+        MapaBombaJ1[DownL][DownC] = 0;
+        MapaBombaJ1[LeftL][LeftC] = 0;
+        MapaBombaJ1[RightL][RightC] = 0;
+
+        BlocoSoma = 0, BlocoDown = 0, BlocoLeft = 0;
+        BlocoRight = 0, BlocoUp = 0, UpL = 0, UpC = 0;
+        RightC = 0, RightL = 0, DownC = 0, DownL = 0;
+        LeftC = 0, LeftC = 0;
+        break;
+
+        case 26:
+        MapaBombaJ1[UpL][UpC] = 12; //12
+        MapaBombaJ1[DownL][DownC] = 12; //12
+        MapaBombaJ1[LeftL][LeftC] = 12; //12
+        MapaBombaJ1[RightL][RightC] = 12; //12
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 13; //13
+        MapaBombaJ1[DownL][DownC] = 13; //13
+        MapaBombaJ1[LeftL][LeftC] = 13; //13
+        MapaBombaJ1[RightL][RightC] = 13; //13
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 14; //14
+        MapaBombaJ1[DownL][DownC] = 14; //14
+        MapaBombaJ1[LeftL][LeftC] = 14; //14
+        MapaBombaJ1[RightL][RightC] = 14; //14
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 15; //15
+        MapaBombaJ1[DownL][DownC] = 15; //15
+        MapaBombaJ1[LeftL][LeftC] = 15; //15
+        MapaBombaJ1[RightL][RightC] = 15; //15
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 16; //16
+        MapaBombaJ1[DownL][DownC] = 16; //12
+        MapaBombaJ1[LeftL][LeftC] = 16; //16
+        MapaBombaJ1[RightL][RightC] = 16; //16
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 17; //17
+        MapaBombaJ1[DownL][DownC] = 17; //12
+        MapaBombaJ1[LeftL][LeftC] = 17; //17
+        MapaBombaJ1[RightL][RightC] = 17; //17
+        SDL_Delay(50);
+
+        MapaBombaJ1[UpL][UpC] = 0;
+        MapaBombaJ1[DownL][DownC] = 0;
+        MapaBombaJ1[LeftL][LeftC] = 0;
+        MapaBombaJ1[RightL][RightC] = 0;
+
+        BlocoSoma = 0, BlocoDown = 0, BlocoLeft = 0;
+        BlocoRight = 0, BlocoUp = 0, UpL = 0, UpC = 0;
+        RightC = 0, RightL = 0, DownC = 0, DownL = 0;
+        LeftC = 0, LeftC = 0;
+        break;
+    }*/
+
+    SDL_Delay(150);
+
+//LIMPAR ANIMAÇÃO DE EXPLOSÃO DA BOMBA
+    for (a = 1; a < 13; a++)
+    {
+        for (b = 1; b < 15; b++)
+        {
+            if (MapaBombaJ1[a][b] == 10)
+            {
+                MapaBombaJ1[a][b] = 0;
+            }
+            if (MapaBombaJ1[a][b] == 6)
+            {
+                MapaBombaJ1[a][b] = 0;
+            }
+            if (MapaBombaJ1[a][b] == 7)
+            {
+                MapaBombaJ1[a][b] = 0;
+            }
+            if (MapaBombaJ1[a][b] == 8)
+            {
+                MapaBombaJ1[a][b] = 0;
+            }
+            if (MapaBombaJ1[a][b] == 9)
+            {
+                MapaBombaJ1[a][b] = 0;
+            }
+        }
+    }
+
+    if(vitoria == 1)
+    {
+        jogando = 100;
+    }
+    if(vitoria == 2)
+    {
+        jogando = 101;
+    }
+
+    pthread_exit(NULL);
+}
+
+// INTERAÇÃO DA BOMBA, JOGADOR 2, COM O CENÁRIO
+void *GerenciamentoBombaJ2(void*arg)
+{
+    BombaJ2 *args = (BombaJ2*)arg;
+    int **MapaBombaJ2 = args -> MapaBombaJ2;
+
+    int a, b = 0;
+
+    for(a = 1; a < 13; a++)
+    {
+        for (b = 1; b < 15; b++)
+        {
+            if (MapaBombaJ2[a][b] == BOMBA2)
+            {
+                pthread_exit(NULL);
+            }
+            if (MapaBombaJ2[a][b] == BOMBAV2)
+            {
+                pthread_exit(NULL);
+            }
+        }
+    }
+
+    Mix_Music *ExplosaoBJ2;
+    ExplosaoBJ2 = Mix_LoadWAV("ExplosaoB1.wav");
+
+    Mix_Music *DropBJ2;
+    DropBJ2 = Mix_LoadWAV("DropB1.wav");
+
+    /*int BlocoUp2 = 0, BlocoDown2 = 0, BlocoLeft2 = 0, BlocoRight2 = 0;
+    int BlocoSoma2 = 0, UpL2 = 0, UpC2 = 0, DownL2 = 0, DownC2 = 0;
+    int LeftL2 = 0, LeftC2 = 0, RightL2 = 0, RightC2 = 0;*/
+
+    MapaBombaJ2[PosicaoJogador2.y][PosicaoJogador2.x] = BOMBA2;
+
+    Mix_PlayChannel(-1, DropBJ2, 0);
+
+    for(a = 1; a < 13; a++)
+    {
+        for (b = 1; b < 15; b++)
+        {
+            if (MapaBombaJ2[a][b] == 11)
+            {
+                MapaBombaJ2[a][b] = 19;
+                SDL_Delay(500);
+                MapaBombaJ2[a][b] = 11;
+                SDL_Delay(500);
+                MapaBombaJ2[a][b] = 19;
+                SDL_Delay(500);
+                MapaBombaJ2[a][b] = 11;
+                SDL_Delay(500);
+                MapaBombaJ2[a][b] = 19;
+                SDL_Delay(500);
+                MapaBombaJ2[a][b] = 11;
+                SDL_Delay(500);
+
+                Mix_PlayChannel(-1, ExplosaoBJ2, 0);
+            }
+        }
+    }
+
+    for(a = 1; a < 13; a++)
+    {
+        for (b = 1; b < 15; b++)
+        {
+            if (MapaBombaJ2[a][b] == 11)
+            {
+                MapaBombaJ2[a][b] = 10;
+
+                 if (MapaBombaJ2[a][b] == MapaBombaJ2[PosicaoJogador1.y][PosicaoJogador1.x])
+                {
+                    MapaBombaJ2[a][b] = 6;
+
+                    derrota = 1;
+                }
+                if (MapaBombaJ2[a][b] == MapaBombaJ2[PosicaoJogador2.y][PosicaoJogador2.x])
+                {
+                    MapaBombaJ2[a][b] = 6;
+
+                    derrota = 2;
+                }
+
+                if (MapaBombaJ2[a+1][b] == 0)
+                {
+                    MapaBombaJ2[a+1][b] = 6;
+                }
+                if (MapaBombaJ2[a+1][b] == MapaBombaJ2[PosicaoJogador1.y][PosicaoJogador1.x])
+                {
+                    MapaBombaJ2[a+1][b] = 6;
+
+                    derrota = 1;
+                }
+                if (MapaBombaJ2[a+1][b] == MapaBombaJ2[PosicaoJogador2.y][PosicaoJogador2.x])
+                {
+                    MapaBombaJ2[a+1][b] = 6;
+
+                    derrota = 2;
+                }
+                if (MapaBombaJ2[a+1][b] == 2)
+                {
+                    //BlocoDown2 = 5;
+                    //DownL2 = a+1;
+                    //DownC2 = b;
+                }
+
+                if (MapaBombaJ2[a-1][b] == 0)
+                {
+                    MapaBombaJ2[a-1][b] = 7;
+                }
+                if (MapaBombaJ2[a-1][b] == MapaBombaJ2[PosicaoJogador1.y][PosicaoJogador1.x])
+                {
+                    MapaBombaJ2[a-1][b] = 7;
+
+                    derrota = 1;
+                }
+                if (MapaBombaJ2[a-1][b] == MapaBombaJ2[PosicaoJogador2.y][PosicaoJogador2.x])
+                {
+                    MapaBombaJ2[a-1][b] = 7;
+
+                    derrota = 2;
+                }
+                if (MapaBombaJ2[a-1][b] == 2)
+                {
+                    //BlocoUp2 = 3;
+                    //UpL2 = a-1;
+                    //UpC2 = b;
+                }
+
+                if (MapaBombaJ2[a][b+1] == 0)
+                {
+                    MapaBombaJ2[a][b+1] = 8;
+                }
+                if (MapaBombaJ2[a][b+1] == MapaBombaJ2[PosicaoJogador1.y][PosicaoJogador1.x])
+                {
+                    MapaBombaJ2[a][b+1] = 8;
+
+                    derrota = 1;
+                }
+                if (MapaBombaJ2[a][b+1] == MapaBombaJ2[PosicaoJogador2.y][PosicaoJogador2.x])
+                {
+                    MapaBombaJ2[a][b+1] = 8;
+
+                    derrota = 2;
+                }
+                if (MapaBombaJ2[a][b+1] == 2)
+                {
+                    //BlocoRight2 = 11;
+                    //RightL2 = a;
+                    //RightC2 = b+1;
+                }
+
+                if (MapaBombaJ2[a][b-1] == 0)
+                {
+                    MapaBombaJ2[a][b-1] = 9;
+                }
+                if (MapaBombaJ2[a][b-1] == MapaBombaJ2[PosicaoJogador1.y][PosicaoJogador1.x])
+                {
+                    MapaBombaJ2[a][b-1] = 9;
+
+                    derrota = 1;
+                }
+                if (MapaBombaJ2[a][b-1] == MapaBombaJ2[PosicaoJogador2.y][PosicaoJogador2.x])
+                {
+                    MapaBombaJ2[a][b-1] = 9;
+
+                    derrota = 2;
+                }
+                if (MapaBombaJ2[a][b-1] == 2)
+                {
+                    //BlocoLeft2 = 7;
+                    //LeftL2 = a;
+                    //LeftC2 = b-1;
+                }
+            }
+        }
+    }
+    SDL_Delay(150);
+
+//ANIMAÇÃO BLOCOS SENDO DESTRUIDOS JOGADOR 2
+
+    /*BlocoSoma2 = BlocoDown2 + BlocoLeft2 + BlocoRight2 + BlocoUp2;
+
+    switch (BlocoSoma2)
+    {
+        case 3:
+        MapaBombaJ2[UpL2][UpC2] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 0;
+
+        BlocoSoma2 = 0, BlocoDown2 = 0, BlocoLeft2 = 0;
+        BlocoRight2 = 0, BlocoUp2 = 0, UpL2 = 0, UpC2 = 0;
+        RightC2 = 0, RightL2 = 0, DownC2 = 0, DownL2 = 0;
+        LeftC2 = 0, LeftC2 = 0;
+        break;
+
+        case 5:
+        MapaBombaJ2[DownL2][DownC2] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 0;
+
+        BlocoSoma2 = 0, BlocoDown2 = 0, BlocoLeft2 = 0;
+        BlocoRight2 = 0, BlocoUp2 = 0, UpL2 = 0, UpC2 = 0;
+        RightC2 = 0, RightL2 = 0, DownC2 = 0, DownL2 = 0;
+        LeftC2 = 0, LeftC2 = 0;
+        break;
+
+        case 7:
+        MapaBombaJ2[LeftL2][LeftC2] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ2[LeftL2][LeftC2] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ2[LeftL2][LeftC2] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ2[LeftL2][LeftC2] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ2[LeftL2][LeftC2] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ2[LeftL2][LeftC2] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ2[LeftL2][LeftC2] = 0;
+
+        BlocoSoma2 = 0, BlocoDown2 = 0, BlocoLeft2 = 0;
+        BlocoRight2 = 0, BlocoUp2 = 0, UpL2 = 0, UpC2 = 0;
+        RightC2 = 0, RightL2 = 0, DownC2 = 0, DownL2 = 0;
+        LeftC2 = 0, LeftC2 = 0;
+        break;
+
+        case 8:
+        MapaBombaJ2[UpL2][UpC2] = 12;
+        MapaBombaJ2[DownL2][DownC2] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 13;
+        MapaBombaJ2[DownL2][DownC2] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 14;
+        MapaBombaJ2[DownL2][DownC2] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 15;
+        MapaBombaJ2[DownL2][DownC2] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 16;
+        MapaBombaJ2[DownL2][DownC2] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 17;
+        MapaBombaJ2[DownL2][DownC2] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 0;
+        MapaBombaJ2[DownL2][DownC2] = 0;
+
+        BlocoSoma2 = 0, BlocoDown2 = 0, BlocoLeft2 = 0;
+        BlocoRight2 = 0, BlocoUp2 = 0, UpL2 = 0, UpC2 = 0;
+        RightC2 = 0, RightL2 = 0, DownC2 = 0, DownL2 = 0;
+        LeftC2 = 0, LeftC2 = 0;
+        break;
+
+        case 10:
+        MapaBombaJ2[UpL2][UpC2] = 12;
+        MapaBombaJ2[LeftL2][LeftC2] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 13;
+        MapaBombaJ2[LeftL2][LeftC2] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 14;
+        MapaBombaJ2[LeftL2][LeftC2] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 15;
+        MapaBombaJ2[LeftL2][LeftC2] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 16;
+        MapaBombaJ2[LeftL2][LeftC2] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 17;
+        MapaBombaJ2[LeftL2][LeftC2] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 0;
+        MapaBombaJ2[LeftL2][LeftC2] = 0;
+
+        BlocoSoma2 = 0, BlocoDown2 = 0, BlocoLeft2 = 0;
+        BlocoRight2 = 0, BlocoUp2 = 0, UpL2 = 0, UpC2 = 0;
+        RightC2 = 0, RightL2 = 0, DownC2 = 0, DownL2 = 0;
+        LeftC2 = 0, LeftC2 = 0;
+        break;
+
+        case 11:
+        MapaBombaJ2[RightL2][RightC2] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 0;
+
+        BlocoSoma2 = 0, BlocoDown2 = 0, BlocoLeft2 = 0;
+        BlocoRight2 = 0, BlocoUp2 = 0, UpL2 = 0, UpC2 = 0;
+        RightC2 = 0, RightL2 = 0, DownC2 = 0, DownL2 = 0;
+        LeftC2 = 0, LeftC2 = 0;
+        break;
+
+        case 12:
+        MapaBombaJ2[DownL2][DownC2] = 12;
+        MapaBombaJ2[LeftL2][LeftC2] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 13;
+        MapaBombaJ2[LeftL2][LeftC2] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 14;
+        MapaBombaJ2[LeftL2][LeftC2] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 15;
+        MapaBombaJ2[LeftL2][LeftC2] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 16;
+        MapaBombaJ2[LeftL2][LeftC2] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 17;
+        MapaBombaJ2[LeftL2][LeftC2] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 0;
+        MapaBombaJ2[LeftL2][LeftC2] = 0;
+
+        BlocoSoma2 = 0, BlocoDown2 = 0, BlocoLeft2 = 0;
+        BlocoRight2 = 0, BlocoUp2 = 0, UpL2 = 0, UpC2 = 0;
+        RightC2 = 0, RightL2 = 0, DownC2 = 0, DownL2 = 0;
+        LeftC2 = 0, LeftC2 = 0;
+        break;
+
+        case 14:
+        MapaBombaJ2[RightL2][RightC2] = 12;
+        MapaBombaJ2[UpL2][UpC2] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 13;
+        MapaBombaJ2[UpL2][UpC2] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 14;
+        MapaBombaJ2[UpL2][UpC2] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 15;
+        MapaBombaJ2[UpL2][UpC2] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 16;
+        MapaBombaJ2[UpL2][UpC2] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 17;
+        MapaBombaJ2[UpL2][UpC2] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 0;
+        MapaBombaJ2[UpL2][UpC2] = 0;
+
+        BlocoSoma2 = 0, BlocoDown2 = 0, BlocoLeft2 = 0;
+        BlocoRight2 = 0, BlocoUp2 = 0, UpL2 = 0, UpC2 = 0;
+        RightC2 = 0, RightL2 = 0, DownC2 = 0, DownL2 = 0;
+        LeftC2 = 0, LeftC2 = 0;
+        break;
+
+        case 15:
+        MapaBombaJ2[UpL2][UpC2] = 12;
+        MapaBombaJ2[DownL2][DownC2] = 12;
+        MapaBombaJ2[LeftL2][LeftC2] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 13;
+        MapaBombaJ2[DownL2][DownC2] = 13;
+        MapaBombaJ2[LeftL2][LeftC2] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 14;
+        MapaBombaJ2[DownL2][DownC2] = 14;
+        MapaBombaJ2[LeftL2][LeftC2] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 15;
+        MapaBombaJ2[DownL2][DownC2] = 15;
+        MapaBombaJ2[LeftL2][LeftC2] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 16;
+        MapaBombaJ2[DownL2][DownC2] = 16;
+        MapaBombaJ2[LeftL2][LeftC2] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 17;
+        MapaBombaJ2[DownL2][DownC2] = 17;
+        MapaBombaJ2[LeftL2][LeftC2] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 0;
+        MapaBombaJ2[DownL2][DownC2] = 0;
+        MapaBombaJ2[LeftL2][LeftC2] = 0;
+
+        BlocoSoma2 = 0, BlocoDown2 = 0, BlocoLeft2 = 0;
+        BlocoRight2 = 0, BlocoUp2 = 0, UpL2 = 0, UpC2 = 0;
+        RightC2 = 0, RightL2 = 0, DownC2 = 0, DownL2 = 0;
+        LeftC2 = 0, LeftC2 = 0;
+        break;
+
+        case 16:
+        MapaBombaJ2[RightL2][RightC2] = 12;
+        MapaBombaJ2[DownL2][DownC2] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 13;
+        MapaBombaJ2[DownL2][DownC2] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 14;
+        MapaBombaJ2[DownL2][DownC2] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 15;
+        MapaBombaJ2[DownL2][DownC2] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 16;
+        MapaBombaJ2[DownL2][DownC2] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 17;
+        MapaBombaJ2[DownL2][DownC2] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 0;
+        MapaBombaJ2[DownL2][DownC2] = 0;
+
+        BlocoSoma2 = 0, BlocoDown2 = 0, BlocoLeft2 = 0;
+        BlocoRight2 = 0, BlocoUp2 = 0, UpL2 = 0, UpC2 = 0;
+        RightC2 = 0, RightL2 = 0, DownC2 = 0, DownL2 = 0;
+        LeftC2 = 0, LeftC2 = 0;
+        break;
+
+        case 18:
+        MapaBombaJ2[RightL2][RightC2] = 12;
+        MapaBombaJ2[LeftL2][LeftC2] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 13;
+        MapaBombaJ2[LeftL2][LeftC2] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 14;
+        MapaBombaJ2[LeftL2][LeftC2] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 15;
+        MapaBombaJ2[LeftL2][LeftC2] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 16;
+        MapaBombaJ2[LeftL2][LeftC2] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 17;
+        MapaBombaJ2[LeftL2][LeftC2] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ2[RightL2][RightC2] = 0;
+        MapaBombaJ2[LeftL2][LeftC2] = 0;
+
+        BlocoSoma2 = 0, BlocoDown2 = 0, BlocoLeft2 = 0;
+        BlocoRight2 = 0, BlocoUp2 = 0, UpL2 = 0, UpC2 = 0;
+        RightC2 = 0, RightL2 = 0, DownC2 = 0, DownL2 = 0;
+        LeftC2 = 0, LeftC2 = 0;
+        break;
+
+        case 19:
+        MapaBombaJ2[UpL2][UpC2] = 12;
+        MapaBombaJ2[DownL2][DownC2] = 12;
+        MapaBombaJ2[RightL2][RightC2] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 13;
+        MapaBombaJ2[DownL2][DownC2] = 13;
+        MapaBombaJ2[RightL2][RightC2] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 14;
+        MapaBombaJ2[DownL2][DownC2] = 14;
+        MapaBombaJ2[RightL2][RightC2] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 15;
+        MapaBombaJ2[DownL2][DownC2] = 15;
+        MapaBombaJ2[RightL2][RightC2] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 16;
+        MapaBombaJ2[DownL2][DownC2] = 16;
+        MapaBombaJ2[RightL2][RightC2] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 17;
+        MapaBombaJ2[DownL2][DownC2] = 17;
+        MapaBombaJ2[RightL2][RightC2] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 0;
+        MapaBombaJ2[DownL2][DownC2] = 0;
+        MapaBombaJ2[RightL2][RightC2] = 0;
+
+        BlocoSoma2 = 0, BlocoDown2 = 0, BlocoLeft2 = 0;
+        BlocoRight2 = 0, BlocoUp2 = 0, UpL2 = 0, UpC2 = 0;
+        RightC2 = 0, RightL2 = 0, DownC2 = 0, DownL2 = 0;
+        LeftC2 = 0, LeftC2 = 0;
+        break;
+
+        case 21:
+        MapaBombaJ2[UpL2][UpC2] = 12;
+        MapaBombaJ2[LeftL2][LeftC2] = 12;
+        MapaBombaJ2[RightL2][RightC2] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 13;
+        MapaBombaJ2[LeftL2][LeftC2] = 13;
+        MapaBombaJ2[RightL2][RightC2] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 14;
+        MapaBombaJ2[LeftL2][LeftC2] = 14;
+        MapaBombaJ2[RightL2][RightC2] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 15;
+        MapaBombaJ2[LeftL2][LeftC2] = 15;
+        MapaBombaJ2[RightL2][RightC2] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 16;
+        MapaBombaJ2[LeftL2][LeftC2] = 16;
+        MapaBombaJ2[RightL2][RightC2] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 17;
+        MapaBombaJ2[LeftL2][LeftC2] = 17;
+        MapaBombaJ2[RightL2][RightC2] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 0;
+        MapaBombaJ2[LeftL2][LeftC2] = 0;
+        MapaBombaJ2[RightL2][RightC2] = 0;
+
+        BlocoSoma2 = 0, BlocoDown2 = 0, BlocoLeft2 = 0;
+        BlocoRight2 = 0, BlocoUp2 = 0, UpL2 = 0, UpC2 = 0;
+        RightC2 = 0, RightL2 = 0, DownC2 = 0, DownL2 = 0;
+        LeftC2 = 0, LeftC2 = 0;
+        break;
+
+        case 23:
+        MapaBombaJ2[DownL2][DownC2] = 12;
+        MapaBombaJ2[LeftL2][LeftC2] = 12;
+        MapaBombaJ2[RightL2][RightC2] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 13;
+        MapaBombaJ2[LeftL2][LeftC2] = 13;
+        MapaBombaJ2[RightL2][RightC2] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 14;
+        MapaBombaJ2[LeftL2][LeftC2] = 14;
+        MapaBombaJ2[RightL2][RightC2] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 15;
+        MapaBombaJ2[LeftL2][LeftC2] = 15;
+        MapaBombaJ2[RightL2][RightC2] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 16;
+        MapaBombaJ2[LeftL2][LeftC2] = 16;
+        MapaBombaJ2[RightL2][RightC2] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 17;
+        MapaBombaJ2[LeftL2][LeftC2] = 17;
+        MapaBombaJ2[RightL2][RightC2] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ2[DownL2][DownC2] = 0;
+        MapaBombaJ2[LeftL2][LeftC2] = 0;
+        MapaBombaJ2[RightL2][RightC2] = 0;
+
+        BlocoSoma2 = 0, BlocoDown2 = 0, BlocoLeft2 = 0;
+        BlocoRight2 = 0, BlocoUp2 = 0, UpL2 = 0, UpC2 = 0;
+        RightC2 = 0, RightL2 = 0, DownC2 = 0, DownL2 = 0;
+        LeftC2 = 0, LeftC2 = 0;
+        break;
+
+        case 26:
+        MapaBombaJ2[UpL2][UpC2] = 12;
+        MapaBombaJ2[DownL2][DownC2] = 12;
+        MapaBombaJ2[LeftL2][LeftC2] = 12;
+        MapaBombaJ2[RightL2][RightC2] = 12;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 13;
+        MapaBombaJ2[DownL2][DownC2] = 13;
+        MapaBombaJ2[LeftL2][LeftC2] = 13;
+        MapaBombaJ2[RightL2][RightC2] = 13;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 14;
+        MapaBombaJ2[DownL2][DownC2] = 14;
+        MapaBombaJ2[LeftL2][LeftC2] = 14;
+        MapaBombaJ2[RightL2][RightC2] = 14;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 15;
+        MapaBombaJ2[DownL2][DownC2] = 15;
+        MapaBombaJ2[LeftL2][LeftC2] = 15;
+        MapaBombaJ2[RightL2][RightC2] = 15;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 16;
+        MapaBombaJ2[DownL2][DownC2] = 16;
+        MapaBombaJ2[LeftL2][LeftC2] = 16;
+        MapaBombaJ2[RightL2][RightC2] = 16;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 17;
+        MapaBombaJ2[DownL2][DownC2] = 17;
+        MapaBombaJ2[LeftL2][LeftC2] = 17;
+        MapaBombaJ2[RightL2][RightC2] = 17;
+        SDL_Delay(50);
+
+        MapaBombaJ2[UpL2][UpC2] = 0;
+        MapaBombaJ2[DownL2][DownC2] = 0;
+        MapaBombaJ2[LeftL2][LeftC2] = 0;
+        MapaBombaJ2[RightL2][RightC2] = 0;
+
+        BlocoSoma2 = 0, BlocoDown2 = 0, BlocoLeft2 = 0;
+        BlocoRight2 = 0, BlocoUp2 = 0, UpL2 = 0, UpC2 = 0;
+        RightC2 = 0, RightL2 = 0, DownC2 = 0, DownL2 = 0;
+        LeftC2 = 0, LeftC2 = 0;
+        break;
+    }*/
+
+    SDL_Delay(150);
+
+//ANIMAÇÃO DE EXPLOSÃO DA BOMBA
+    for (a = 1; a < 13; a++)
+    {
+        for (b = 1; b < 15; b++)
+        {
+            if (MapaBombaJ2[a][b] == 10)
+            {
+                MapaBombaJ2[a][b] = 0;
+            }
+            if (MapaBombaJ2[a][b] == 6)
+            {
+                MapaBombaJ2[a][b] = 0;
+            }
+            if (MapaBombaJ2[a][b] == 7)
+            {
+                MapaBombaJ2[a][b] = 0;
+            }
+            if (MapaBombaJ2[a][b] == 8)
+            {
+                MapaBombaJ2[a][b] = 0;
+            }
+            if (MapaBombaJ2[a][b] == 9)
+            {
+                MapaBombaJ2[a][b] = 0;
+            }
+        }
+    }
+
+    /*if (derrota == 2)
+    {
+        jogando = 100;
+    }
+    if (derrota == 101)
+    {
+        jogando = 6;
+    }*/
+
+    pthread_exit(NULL);
+}
