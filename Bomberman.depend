@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1576001851 source:c:\users\pichau\desktop\bomberman\bomberman\main.c
+1576021038 source:c:\users\pichau\desktop\bomberman\bomberman\main.c
 	<stdlib.h>
 	<stdio.h>
 	<SDL.h>
@@ -7,7 +7,7 @@
 	<SDL_mixer.h>
 	<SDL_ttf.h>
 
-1576003972 source:c:\users\pichau\desktop\bomberman\bomberman\jogo.c
+1576020879 source:c:\users\pichau\desktop\bomberman\bomberman\jogo.c
 	<stdlib.h>
 	<stdio.h>
 	<SDL.h>

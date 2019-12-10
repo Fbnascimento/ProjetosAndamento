@@ -11,21 +11,18 @@ int main(int argc, char *argv[])
 {
     SDL_Surface *tela = NULL;
     SDL_Surface *menu = NULL;
-    SDL_Surface *novo_jogo = NULL;
-    SDL_Surface *msg_sair = NULL;
+    SDL_Surface *mensagem = NULL;
 
     SDL_Rect posicao_menu;
-    SDL_Rect posicao_novo_jogo;
-    SDL_Rect posicao_msg_sair;
+    SDL_Rect posicao_mensagem;
 
     TTF_Font *fonte = NULL;
-    SDL_Color cor_texto = {0, 0, 0}, cor = {255, 255, 255};
+    SDL_Color cor_texto = {0, 0, 0}, cor = {0, 0, 0};
 
     SDL_Event evento;
 
     int continuar = 3;
-    char texto_novo_jogo[30] = "";
-    char texto_msg_sair[30] = "";
+    char texto_mensagem[30] = "";
 
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -40,11 +37,8 @@ int main(int argc, char *argv[])
     TTF_Init();
     fonte = TTF_OpenFont("fonte.ttf", 36);
 
-    sprintf(texto_novo_jogo, "(1) Novo Jogo");
-    novo_jogo = TTF_RenderText_Blended(fonte, texto_novo_jogo, cor);
-
-    sprintf(texto_msg_sair, "(2) Sair");
-    msg_sair = TTF_RenderText_Blended(fonte, texto_msg_sair, cor);
+    sprintf(texto_mensagem, "APERTE 1");
+    mensagem = TTF_RenderText_Blended(fonte, texto_mensagem, cor);
 
 //MUSICA DO MENU
     SDL_Delay(100);
@@ -56,16 +50,13 @@ int main(int argc, char *argv[])
     posicao_menu.x=0;
     posicao_menu.y=0;
 
-    posicao_novo_jogo.x = 6;
-    posicao_novo_jogo.y = 0;
-
-    posicao_msg_sair.x = 5;
-    posicao_msg_sair.y = 30;
+    posicao_mensagem.x = 0;
+    posicao_mensagem.y = 0;
 
 //EVENTO PARA ENTRAR OU NÃO NO JOGO
     while(continuar)
     {
-        Mix_PlayMusic(musica_menu, 5);
+        Mix_PlayMusic(musica_menu, -1);
 
         SDL_WaitEvent(&evento);
         switch(evento.type)
@@ -78,7 +69,7 @@ int main(int argc, char *argv[])
 
             switch(evento.key.keysym.sym)
             {
-                case SDLK_2:
+                case SDLK_ESCAPE:
                 continuar = 0;
                 break;
 
@@ -91,15 +82,13 @@ int main(int argc, char *argv[])
         }
 
         SDL_BlitSurface(menu, NULL, tela, &posicao_menu);
-        SDL_BlitSurface(novo_jogo, NULL, tela, &posicao_novo_jogo);
-        SDL_BlitSurface(msg_sair, NULL, tela, &posicao_msg_sair);
+        SDL_BlitSurface(mensagem, NULL, tela, &posicao_mensagem);
         SDL_Flip(tela);
     }
 
 //   Mix_CloseAudio();
     SDL_FreeSurface(menu);
-    SDL_FreeSurface(novo_jogo);
-    SDL_FreeSurface(msg_sair);
+    SDL_FreeSurface(mensagem);
     SDL_Quit();
 
     return EXIT_SUCCESS;

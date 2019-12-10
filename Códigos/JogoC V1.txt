@@ -12,8 +12,8 @@
 
 //VARIÁVEL GLOBAL
 int gVitoria = 0;
-int gContinuar = 1;
 int gDerrota = 0;
+int gContinuar;
 
 //ESTRUTURAS PARA AS BOMBAS NA TELA
 typedef struct
@@ -86,6 +86,9 @@ void jogar(SDL_Surface* tela)
     SDL_Surface *jogador_2d = NULL;
     SDL_Surface *jogador_2e = NULL;
 
+    SDL_Surface *remover_j1 = NULL;
+    SDL_Surface *remover_j2 = NULL;
+
     SDL_Surface *jogador_1_atual = NULL;
     SDL_Surface *jogador_2_atual = NULL;
 
@@ -94,6 +97,12 @@ void jogar(SDL_Surface* tela)
 //CRIAÇÃO DA POSIÇÃO DO CENÁRIO E DA SUA IMAGEM
     SDL_Rect posicao_cenario;
     SDL_Surface *cenario = NULL;
+
+    SDL_Rect posicao_vitoria1;
+    SDL_Rect posicao_vitoria2;
+
+    SDL_Surface *vitoriaj1 = NULL;
+    SDL_Surface *vitoriaj2 = NULL;
 
 //CRIAÇÃO DAS IMAGENS DE BOMBAS E EXPLOSÃO
     SDL_Surface *bomba_v1 = NULL;
@@ -375,6 +384,9 @@ void jogar(SDL_Surface* tela)
     jogador_2d = IMG_Load("BombermanBD.png");
     jogador_2c = IMG_Load("BombermanBC.png");
 
+    vitoriaj2 = IMG_Load("VitoriaJ2.bmp");
+    vitoriaj1 = IMG_Load("VitoriaJ1.bmp");
+
     bloco = IMG_Load("Bloco.png");
     cenario = IMG_Load("Cenario.bmp");
 
@@ -403,6 +415,8 @@ void jogar(SDL_Surface* tela)
     mapa[11][13] = 0;
     mapa[10][13] = 0;
     mapa[11][12] = 0;
+
+    gContinuar = 1;
 
 //MOVIMENTAÇÃO DOS JOGADORES
     while(gContinuar == 1)
@@ -464,7 +478,7 @@ void jogar(SDL_Surface* tela)
             gContinuar = 0;
         }
 
-        SDL_FillRect(tela,NULL,SDL_MapRGB(tela -> format,0,0,0));
+       SDL_FillRect(tela,NULL,SDL_MapRGB(tela -> format,0,0,0));
 
 //POSIÇÃO DO CENARIO NA TELA
         posicao_cenario.x = 0;
@@ -490,6 +504,10 @@ void jogar(SDL_Surface* tela)
                     SDL_BlitSurface(bomba_1, NULL, tela, &posicao);
                     break;
 
+                    case 10:
+                    SDL_BlitSurface(explosao_m, NULL, tela, &posicao);
+                    break;
+
                     case 6:
                     SDL_BlitSurface(explosao_b, NULL, tela, &posicao);
                     break;
@@ -504,10 +522,6 @@ void jogar(SDL_Surface* tela)
 
                     case 9:
                     SDL_BlitSurface(explosao_e, NULL, tela, &posicao);
-                    break;
-
-                    case 10:
-                    SDL_BlitSurface(explosao_m, NULL, tela, &posicao);
                     break;
 
                     case 11:
@@ -565,23 +579,27 @@ void jogar(SDL_Surface* tela)
         SDL_Flip(tela);
     }
 
-    if(gContinuar == 5)//PLAYER 1
+    if(gContinuar == 5)//PLAYER 2
     {
-
         Mix_CloseAudio();
         Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
         Mix_Music *audio_vitoria = NULL;
         audio_vitoria = Mix_LoadMUS("AudioVitoria.mp3");
         Mix_PlayMusic(audio_vitoria, 0);
+
+        posicao_vitoria2.x = 0;
+        posicao_vitoria2.y = 0;
+
+        SDL_BlitSurface(vitoriaj2, NULL, tela, &posicao_vitoria2);
 
         SDL_Delay(10000);
 
         SDL_Flip(tela);
 
         gContinuar = 0;
-
     }
-    else if (gContinuar == 6) //PLAYER 2
+
+    if (gContinuar == 6) //PLAYER 1
     {
         Mix_CloseAudio();
         Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
@@ -589,37 +607,10 @@ void jogar(SDL_Surface* tela)
         audio_vitoria = Mix_LoadMUS("AudioVitoria.mp3");
         Mix_PlayMusic(audio_vitoria, 0);
 
-        SDL_Delay(10000);
+        posicao_vitoria2.x = 0;
+        posicao_vitoria2.y = 0;
 
-        SDL_Flip(tela);
-
-        gContinuar = 0;
-
-    }
-    else if (gContinuar == 7) //PLAYER 1
-    {
-
-        Mix_CloseAudio();
-        Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
-        Mix_Music *audio_vitoria = NULL;
-        audio_vitoria = Mix_LoadMUS("AudioVitoria.mp3");
-        Mix_PlayMusic(audio_vitoria, 0);
-
-        SDL_Delay(10000);
-
-        SDL_Flip(tela);
-
-        gContinuar = 0;
-
-    }
-    else if (gContinuar == 8) //PLAYER 2
-    {
-
-        Mix_CloseAudio();
-        Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
-        Mix_Music *audio_vitoria = NULL;
-        audio_vitoria = Mix_LoadMUS("AudioVitoria.mp3");
-        Mix_PlayMusic(audio_vitoria, 0);
+        SDL_BlitSurface(vitoriaj2, NULL, tela, &posicao_vitoria2);
 
         SDL_Delay(10000);
 
@@ -816,7 +807,7 @@ void *gerenciamento_bomba_j1(void*arg)
     bomba_j1 *args = (bomba_j1*)arg;
     int **mapa_bomba_j1 = args -> mapa_bomba_j1;
 
-    int a, b, z = 0;
+    int a, b;
 
     for(a = 1; a < 13; a++)
     {
@@ -834,10 +825,6 @@ void *gerenciamento_bomba_j1(void*arg)
 
     Mix_Music *drop_bj1;
     drop_bj1 = Mix_LoadWAV("DropB1.wav");
-
-    int jogador_1_linha = 0, jogador_2_linha = 0, jogador_1_coluna = 0, jogador_2_coluna = 0;
-    int win_right = 0, win_left = 0, win_up = 0, win_down = 0;
-    int lose_right = 0, lose_left = 0, lose_up = 0, lose_down = 0;
 
     int bloco_up = 0, bloco_down = 0, bloco_left = 0, bloco_right = 0;
     int bloco_soma = 0, up_linha = 0, up_coluna = 0, down_linha = 0, down_coluna = 0;
@@ -884,78 +871,10 @@ void *gerenciamento_bomba_j1(void*arg)
                 if (mapa_bomba_j1[a][b] == mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x])
                 {
                     gVitoria = 200;
-
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 20;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 21;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 22;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 23;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 24;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 0;
-
-                    for (a = 1; a < 13; a++)
-                    {
-                        for (b = 1; b < 15; b++)
-                        {
-                            if (mapa_bomba_j1[a][b] == mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x])
-                            {
-                                for (z = 0; z < 3; z++)
-                                {
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 29;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 30;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 31;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 32;
-                                    SDL_Delay(200);
-                                }
-                            }
-                        }
-                    }
                 }
-
                 if (mapa_bomba_j1[a][b] == mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x])
                 {
-
                     gVitoria = 100;
-
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 20;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 21;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 22;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 23;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 24;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 0;
-
-                    for (a = 1; a < 13; a++)
-                    {
-                        for (b = 1; b < 15; b++)
-                        {
-                            if (mapa_bomba_j1[a][b] == mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x])
-                            {
-                                for (z = 0; z < 3; z++)
-                                {
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 29;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 30;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 31;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 32;
-                                    SDL_Delay(200);
-                                }
-                            }
-                        }
-                    }
                 }
 
                 if (mapa_bomba_j1[a+1][b] == 0)
@@ -967,78 +886,12 @@ void *gerenciamento_bomba_j1(void*arg)
                     mapa_bomba_j1[a+1][b] = 6;
 
                     gVitoria = 200;
-
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 20;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 21;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 22;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 23;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 24;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 0;
-
-                    for (a = 1; a < 13; a++)
-                    {
-                        for (b = 1; b < 15; b++)
-                        {
-                            if (mapa_bomba_j1[a][b] == mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x])
-                            {
-                                for (z = 0; z < 3; z++)
-                                {
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 29;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 30;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 31;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 32;
-                                    SDL_Delay(200);
-                                }
-                            }
-                        }
-                    }
                 }
                 if (mapa_bomba_j1[a+1][b] == mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x])
                 {
                     mapa_bomba_j1[a+1][b] = 6;
 
                     gVitoria = 100;
-
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 20;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 21;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 22;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 23;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 24;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 0;
-
-                    for (a = 1; a < 13; a++)
-                    {
-                        for (b = 1; b < 15; b++)
-                        {
-                            if (mapa_bomba_j1[a][b] == mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x])
-                            {
-                                for (z = 0; z < 3; z++)
-                                {
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 29;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 30;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 31;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 32;
-                                    SDL_Delay(200);
-                                }
-                            }
-                        }
-                    }
                 }
                 if (mapa_bomba_j1[a+1][b] == 2)
                 {
@@ -1056,78 +909,12 @@ void *gerenciamento_bomba_j1(void*arg)
                     mapa_bomba_j1[a-1][b] = 7;
 
                     gVitoria = 200;
-
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 20;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 21;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 22;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 23;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 24;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 0;
-
-                    for (a = 1; a < 13; a++)
-                    {
-                        for (b = 1; b < 15; b++)
-                        {
-                            if (mapa_bomba_j1[a][b] == mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x])
-                            {
-                                for (z = 0; z < 3; z++)
-                                {
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 29;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 30;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 31;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 32;
-                                    SDL_Delay(200);
-                                }
-                            }
-                        }
-                    }
                 }
                 if (mapa_bomba_j1[a-1][b] == mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x])
                 {
                     mapa_bomba_j1[a-1][b] = 7;
 
                     gVitoria = 100;
-
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 20;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 21;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 22;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 23;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 24;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 0;
-
-                    for (a = 1; a < 13; a++)
-                    {
-                        for (b = 1; b < 15; b++)
-                        {
-                            if (mapa_bomba_j1[a][b] == mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x])
-                            {
-                                for (z = 0; z < 3; z++)
-                                {
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 29;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 30;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 31;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 32;
-                                    SDL_Delay(200);
-                                }
-                            }
-                        }
-                    }
                 }
                 if (mapa_bomba_j1[a-1][b] == 2)
                 {
@@ -1145,78 +932,12 @@ void *gerenciamento_bomba_j1(void*arg)
                     mapa_bomba_j1[a][b+1] = 8;
 
                     gVitoria = 200;
-
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 20;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 21;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 22;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 23;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 24;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 0;
-
-                    for (a = 1; a < 13; a++)
-                    {
-                        for (b = 1; b < 15; b++)
-                        {
-                            if (mapa_bomba_j1[a][b] == mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x])
-                            {
-                                for (z = 0; z < 3; z++)
-                                {
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 29;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 30;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 31;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 32;
-                                    SDL_Delay(200);
-                                }
-                            }
-                        }
-                    }
                 }
                 if (mapa_bomba_j1[a][b+1] == mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x])
                 {
                     mapa_bomba_j1[a][b+1] = 8;
 
                     gVitoria = 100;
-
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 20;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 21;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 22;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 23;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 24;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 0;
-
-                    for (a = 1; a < 13; a++)
-                    {
-                        for (b = 1; b < 15; b++)
-                        {
-                            if (mapa_bomba_j1[a][b] == mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x])
-                            {
-                                for (z = 0; z < 3; z++)
-                                {
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 29;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 30;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 31;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 32;
-                                    SDL_Delay(200);
-                                }
-                            }
-                        }
-                    }
                 }
                 if (mapa_bomba_j1[a][b+1] == 2)
                 {
@@ -1234,78 +955,12 @@ void *gerenciamento_bomba_j1(void*arg)
                     mapa_bomba_j1[a][b-1] = 9;
 
                     gVitoria = 200;
-
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 20;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 21;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 22;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 23;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 24;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 0;
-
-                    for (a = 1; a < 13; a++)
-                    {
-                        for (b = 1; b < 15; b++)
-                        {
-                            if (mapa_bomba_j1[a][b] == mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x])
-                            {
-                                for (z = 0; z < 3; z++)
-                                {
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 29;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 30;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 31;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_2.y-1][posicao_jogador_2.x] = 32;
-                                    SDL_Delay(200);
-                                }
-                            }
-                        }
-                    }
                 }
                 if (mapa_bomba_j1[a][b-1] == mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x])
                 {
                     mapa_bomba_j1[a][b-1] = 9;
 
                     gVitoria = 100;
-
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 20;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 21;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 22;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 23;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_2.y][posicao_jogador_2.x] = 24;
-                    SDL_Delay(100);
-                    mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x] = 0;
-
-                    for (a = 1; a < 13; a++)
-                    {
-                        for (b = 1; b < 15; b++)
-                        {
-                            if (mapa_bomba_j1[a][b] == mapa_bomba_j1[posicao_jogador_1.y][posicao_jogador_1.x])
-                            {
-                                for (z = 0; z < 3; z++)
-                                {
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 29;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 30;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 31;
-                                    SDL_Delay(200);
-                                    mapa_bomba_j1[posicao_jogador_1.y-1][posicao_jogador_1.x] = 32;
-                                    SDL_Delay(200);
-                                }
-                            }
-                        }
-                    }
                 }
                 if (mapa_bomba_j1[a][b-1] == 2)
                 {
@@ -1961,29 +1616,13 @@ void *gerenciamento_bomba_j2(void*arg)
 
                 if (mapa_bomba_j2[a][b] == mapa_bomba_j2[posicao_jogador_1.y][posicao_jogador_1.x])
                 {
-                    gDerrota = 100;
+                    gDerrota = 200;
                 }
                 if (mapa_bomba_j2[a][b] == mapa_bomba_j2[posicao_jogador_2.y][posicao_jogador_2.x])
                 {
-                    gDerrota = 200;
-                }
-
-                if (mapa_bomba_j2[a+1][b] == 0)
-                {
-                    mapa_bomba_j2[a+1][b] = 6;
-                }
-                if (mapa_bomba_j2[a+1][b] == mapa_bomba_j2[posicao_jogador_1.y][posicao_jogador_1.x])
-                {
-                    mapa_bomba_j2[a+1][b] = 6;
-
                     gDerrota = 100;
                 }
-                if (mapa_bomba_j2[a+1][b] == mapa_bomba_j2[posicao_jogador_2.y][posicao_jogador_2.x])
-                {
-                    mapa_bomba_j2[a+1][b] = 6;
 
-                    gDerrota = 200;
-                }
                 if (mapa_bomba_j2[a+1][b] == 2)
                 {
                     bloco_down_2 = 5;
@@ -1999,13 +1638,13 @@ void *gerenciamento_bomba_j2(void*arg)
                 {
                     mapa_bomba_j2[a-1][b] = 7;
 
-                    gDerrota = 100;
+                    gDerrota = 200;
                 }
                 if (mapa_bomba_j2[a-1][b] == mapa_bomba_j2[posicao_jogador_2.y][posicao_jogador_2.x])
                 {
                     mapa_bomba_j2[a-1][b] = 7;
 
-                    gDerrota = 200;
+                    gDerrota = 100;
                 }
                 if (mapa_bomba_j2[a-1][b] == 2)
                 {
@@ -2022,13 +1661,13 @@ void *gerenciamento_bomba_j2(void*arg)
                 {
                     mapa_bomba_j2[a][b+1] = 8;
 
-                    gDerrota = 100;
+                    gDerrota = 200;
                 }
                 if (mapa_bomba_j2[a][b+1] == mapa_bomba_j2[posicao_jogador_2.y][posicao_jogador_2.x])
                 {
                     mapa_bomba_j2[a][b+1] = 8;
 
-                    gDerrota = 200;
+                    gDerrota = 100;
                 }
                 if (mapa_bomba_j2[a][b+1] == 2)
                 {
@@ -2045,13 +1684,13 @@ void *gerenciamento_bomba_j2(void*arg)
                 {
                     mapa_bomba_j2[a][b-1] = 9;
 
-                    gDerrota = 100;
+                    gDerrota = 200;
                 }
                 if (mapa_bomba_j2[a][b-1] == mapa_bomba_j2[posicao_jogador_2.y][posicao_jogador_2.x])
                 {
                     mapa_bomba_j2[a][b-1] = 9;
 
-                    gDerrota = 200;
+                    gDerrota = 100;
                 }
                 if (mapa_bomba_j2[a][b-1] == 2)
                 {
@@ -2629,11 +2268,11 @@ void *gerenciamento_bomba_j2(void*arg)
 
     if (gDerrota == 200)
     {
-        gContinuar = 7;
+        gContinuar = 6;
     }
-    if (gDerrota == 100)
+    if (gDerrota = 100)
     {
-        gContinuar = 8;
+        gContinuar = 5;
     }
 
     pthread_exit(NULL);
