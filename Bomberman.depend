@@ -1,13 +1,20 @@
 # depslib dependency file v1.0
-1576021038 source:c:\users\pichau\desktop\bomberman\bomberman\main.c
+1576155074 source:c:\users\pichau\desktop\bomberman\bomberman\gelo.c
 	<stdlib.h>
 	<stdio.h>
 	<SDL.h>
 	<SDL_image.h>
 	<SDL_mixer.h>
 	<SDL_ttf.h>
+	<pthread.h>
+	"gelo.h"
+	"constante.h"
 
-1576020879 source:c:\users\pichau\desktop\bomberman\bomberman\jogo.c
+1576153257 c:\users\pichau\desktop\bomberman\bomberman\gelo.h
+
+1576150712 c:\users\pichau\desktop\bomberman\bomberman\constante.h
+
+1576154186 source:c:\users\pichau\desktop\bomberman\bomberman\jogo.c
 	<stdlib.h>
 	<stdio.h>
 	<SDL.h>
@@ -18,11 +25,18 @@
 	"jogo.h"
 	"constante.h"
 
-1575998063 c:\users\pichau\desktop\bomberman\bomberman\jogo.h
+1576152074 c:\users\pichau\desktop\bomberman\bomberman\jogo.h
 
-1575998063 c:\users\pichau\desktop\bomberman\bomberman\constante.h
+1576156687 source:c:\users\pichau\desktop\bomberman\bomberman\main.c
+	<stdlib.h>
+	<stdio.h>
+	<time.h>
+	<SDL.h>
+	<SDL_image.h>
+	<SDL_mixer.h>
+	<SDL_ttf.h>
 
-1575995000 source:c:\users\pichau\desktop\bomberman\bomberman\menu.c
+1576157083 source:c:\users\pichau\desktop\bomberman\bomberman\pista.c
 	<stdlib.h>
 	<stdio.h>
 	<SDL.h>
@@ -30,6 +44,8 @@
 	<SDL_mixer.h>
 	<SDL_ttf.h>
 	<pthread.h>
-	"jogo.h"
+	"pista.h"
 	"constante.h"
+
+1576156445 c:\users\pichau\desktop\bomberman\bomberman\pista.h
 

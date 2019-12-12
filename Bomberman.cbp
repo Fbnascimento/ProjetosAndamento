@@ -36,6 +36,10 @@
 			<Add option="-lmingw32 -lSDLmain -lSDL -lSDL_image -lSDL_mixer -lSDL_ttf" />
 		</Linker>
 		<Unit filename="constante.h" />
+		<Unit filename="gelo.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="gelo.h" />
 		<Unit filename="jogo.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -43,6 +47,10 @@
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="pista.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="pista.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
