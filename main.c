@@ -13,17 +13,20 @@ int main(int argc, char *argv[])
     SDL_Surface *tela2 = NULL;
     SDL_Surface *tela3 = NULL;
     SDL_Surface *tela4 = NULL;
+    SDL_Surface *tela5 = NULL;
 
     SDL_Surface *menu = NULL;
     SDL_Surface *novo_jogo = NULL;
     SDL_Surface *mapa_gelo = NULL;
     SDL_Surface *mapa_pista = NULL;
+    SDL_Surface *mapa_fabrica = NULL;
     SDL_Surface *msg_sair = NULL;
 
     SDL_Rect posicao_menu;
     SDL_Rect posicao_novo_jogo;
     SDL_Rect posicao_mapa_gelo;
     SDL_Rect posicao_mapa_pista;
+    SDL_Rect posicao_mapa_fabrica;
     SDL_Rect posicao_msg_sair;
 
     TTF_Font *fonte = NULL;
@@ -34,6 +37,7 @@ int main(int argc, char *argv[])
     int continuar = 3;
     char texto_novo_jogo[30] = "";
     char texto_mapa_gelo[30] = "";
+    char texto_mapa_fabrica[30] = "";
     char texto_mapa_pista[30] = "";
     char texto_msg_sair[30] = "";
 
@@ -53,13 +57,16 @@ int main(int argc, char *argv[])
     sprintf(texto_novo_jogo, "(1) Mapa Clássico");
     novo_jogo = TTF_RenderText_Blended(fonte, texto_novo_jogo, cor);
 
-    sprintf(texto_mapa_gelo, "(2) Mapa de Gelo");
+    sprintf(texto_mapa_gelo, "(2) Mapa Gelo");
     mapa_gelo = TTF_RenderText_Blended(fonte, texto_mapa_gelo, cor);
 
-    sprintf(texto_mapa_pista, "(3) Mapa de Corrida");
+    sprintf(texto_mapa_pista, "(3) Mapa Corrida");
     mapa_pista = TTF_RenderText_Blended(fonte, texto_mapa_pista, cor);
 
-    sprintf(texto_msg_sair, "(4) Sair");
+    sprintf(texto_mapa_fabrica, "(4) Mapa Fábrica");
+    mapa_fabrica = TTF_RenderText_Blended(fonte, texto_mapa_fabrica, cor);
+
+    sprintf(texto_msg_sair, "(5) Sair");
     msg_sair = TTF_RenderText_Blended(fonte, texto_msg_sair, cor);
 
 //MUSICA DO MENU
@@ -81,8 +88,11 @@ int main(int argc, char *argv[])
     posicao_mapa_pista.x = 5;
     posicao_mapa_pista.y = 60;
 
+    posicao_mapa_fabrica.x = 5;
+    posicao_mapa_fabrica.y = 90;
+
     posicao_msg_sair.x = 5;
-    posicao_msg_sair.y = 90;
+    posicao_msg_sair.y = 120;
 
 //EVENTO PARA ENTRAR OU NÃO NO JOGO
     while(continuar)
@@ -100,7 +110,7 @@ int main(int argc, char *argv[])
 
             switch(evento.key.keysym.sym)
             {
-                case SDLK_4:
+                case SDLK_5:
                 continuar = 0;
                 break;
 
@@ -118,6 +128,11 @@ int main(int argc, char *argv[])
                 tela4 = SDL_SetVideoMode(520,470,32, SDL_HWSURFACE | SDL_DOUBLEBUF);
                 jogar_pista(tela4);
                 break;
+
+                case SDLK_4:
+                tela5 = SDL_SetVideoMode(520,470,32, SDL_HWSURFACE | SDL_DOUBLEBUF);
+                jogar_fabrica(tela5);
+                break;
             }
 
             break;
@@ -127,6 +142,7 @@ int main(int argc, char *argv[])
         SDL_BlitSurface(novo_jogo, NULL, tela, &posicao_novo_jogo);
         SDL_BlitSurface(mapa_gelo, NULL, tela, &posicao_mapa_gelo);
         SDL_BlitSurface(mapa_pista, NULL, tela, &posicao_mapa_pista);
+        SDL_BlitSurface(mapa_fabrica, NULL, tela, &posicao_mapa_fabrica);
         SDL_BlitSurface(msg_sair, NULL, tela, &posicao_msg_sair);
         SDL_Flip(tela);
     }
@@ -136,6 +152,7 @@ int main(int argc, char *argv[])
     SDL_FreeSurface(novo_jogo);
     SDL_FreeSurface(mapa_gelo);
     SDL_FreeSurface(mapa_pista);
+    SDL_FreeSurface(mapa_fabrica);
     SDL_FreeSurface(msg_sair);
     SDL_Quit();
 

@@ -27,7 +27,7 @@
 
 1576152074 c:\users\pichau\desktop\bomberman\bomberman\jogo.h
 
-1576156687 source:c:\users\pichau\desktop\bomberman\bomberman\main.c
+1576167889 source:c:\users\pichau\desktop\bomberman\bomberman\main.c
 	<stdlib.h>
 	<stdio.h>
 	<time.h>
@@ -48,4 +48,80 @@
 	"constante.h"
 
 1576156445 c:\users\pichau\desktop\bomberman\bomberman\pista.h
+
+1576167676 source:c:\users\pichau\desktop\bomberman\bomberman\fabrica.c
+	<stdlib.h>
+	<stdio.h>
+	<SDL.h>
+	<SDL_image.h>
+	<SDL_mixer.h>
+	<SDL_ttf.h>
+	<pthread.h>
+	"fabrica.h"
+	"constante.h"
+
+1576167653 c:\users\pichau\desktop\bomberman\bomberman\fabrica.h
+
+1576168140 source:c:\users\pichau\desktop\bomberman com 4 mapas\bomberman\fabrica.c
+	<stdlib.h>
+	<stdio.h>
+	<SDL.h>
+	<SDL_image.h>
+	<SDL_mixer.h>
+	<SDL_ttf.h>
+	<pthread.h>
+	"fabrica.h"
+	"constante.h"
+
+1576167653 c:\users\pichau\desktop\bomberman com 4 mapas\bomberman\fabrica.h
+
+1576150712 c:\users\pichau\desktop\bomberman com 4 mapas\bomberman\constante.h
+
+1576155074 source:c:\users\pichau\desktop\bomberman com 4 mapas\bomberman\gelo.c
+	<stdlib.h>
+	<stdio.h>
+	<SDL.h>
+	<SDL_image.h>
+	<SDL_mixer.h>
+	<SDL_ttf.h>
+	<pthread.h>
+	"gelo.h"
+	"constante.h"
+
+1576153257 c:\users\pichau\desktop\bomberman com 4 mapas\bomberman\gelo.h
+
+1576154186 source:c:\users\pichau\desktop\bomberman com 4 mapas\bomberman\jogo.c
+	<stdlib.h>
+	<stdio.h>
+	<SDL.h>
+	<SDL_image.h>
+	<SDL_mixer.h>
+	<SDL_ttf.h>
+	<pthread.h>
+	"jogo.h"
+	"constante.h"
+
+1576152074 c:\users\pichau\desktop\bomberman com 4 mapas\bomberman\jogo.h
+
+1576167889 source:c:\users\pichau\desktop\bomberman com 4 mapas\bomberman\main.c
+	<stdlib.h>
+	<stdio.h>
+	<time.h>
+	<SDL.h>
+	<SDL_image.h>
+	<SDL_mixer.h>
+	<SDL_ttf.h>
+
+1576157083 source:c:\users\pichau\desktop\bomberman com 4 mapas\bomberman\pista.c
+	<stdlib.h>
+	<stdio.h>
+	<SDL.h>
+	<SDL_image.h>
+	<SDL_mixer.h>
+	<SDL_ttf.h>
+	<pthread.h>
+	"pista.h"
+	"constante.h"
+
+1576156445 c:\users\pichau\desktop\bomberman com 4 mapas\bomberman\pista.h
 
